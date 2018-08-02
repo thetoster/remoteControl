@@ -1,0 +1,7 @@
+﻿.piolibdeps/**
+.pioenvs/**
+.pioenvs
+.piolibdeps
+.cproject
+.project
+.settings/**
