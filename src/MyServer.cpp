@@ -1,0 +1,350 @@
+/*
+ MIT License
+
+Copyright (c) 2018 Bartłomiej Żarnowski
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+ WifiServer.cpp
+ Created on: Dec 29, 2017
+ Author: Bartłomiej Żarnowski (Toster)
+ */
+#include <ESP8266TrueRandom.h>
+#include <MyServer.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <ESP8266WebServer.h>
+#include <ArduinoJson.h>
+#include "Updater.h"
+#include "Prefs.h"
+
+static const char rootHtml[] PROGMEM =
+  #include "www/index.html"
+;
+
+ESP8266WebServer httpServer(80);
+MyServer myServer;
+static const char* www_username = "Lampster";
+static const char* www_realm = "Remote Control";
+
+namespace {
+
+bool checkAuth() {
+  if (httpServer.authenticate(www_username, prefs.storage.password) == false) {
+    httpServer.requestAuthentication(DIGEST_AUTH, www_realm);
+    return false;
+  };
+  return true;
+}
+
+void handleNotFound(){
+  if (checkAuth() == false) {
+    return;
+  }
+  httpServer.send(404, "text/plain", "404: Not found");
+}
+
+void handleFactoryConfig() {
+  if (checkAuth() == false) {
+    return;
+  }
+  prefs.defaultValues();
+  prefs.save();
+  httpServer.send(200, "text/plain", "200: OK");
+  myServer.switchToConfigMode();
+}
+
+void handleVersion() {
+  if (checkAuth() == false) {
+    return;
+  }
+  DynamicJsonBuffer  jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+  root["version"] = versionString;
+  String response;
+  root.printTo(response);
+  httpServer.send(200, "application/json", response);
+}
+
+void handleGetConfig() {
+  if (checkAuth() == false) {
+    return;
+  }
+  DynamicJsonBuffer  jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+
+  //Network
+  root["ssid"] = prefs.storage.ssid;
+  root["inNetworkName"] = prefs.storage.inNetworkName;
+  root["username"] = prefs.storage.username;
+
+  String response;
+  root.printTo(response);
+  httpServer.send(200, "application/json", response);
+}
+
+String getStringArg(String argName, int maxLen, bool* isError) {
+  String result = "";
+  *isError = false;
+  if (httpServer.hasArg(argName)) {
+    result = httpServer.arg(argName);
+    if (result.length() >= (unsigned int)maxLen) {
+      String resp = "406: Not Acceptable, '" + argName + "' to long.";
+      httpServer.send(406, "text/plain", resp);
+      *isError = true;
+    }
+  }
+  return result;
+}
+
+int getIntArg(String argName, int maxValue, bool* isError) {
+  int result = -1;
+  *isError = false;
+  if (httpServer.hasArg(argName)) {
+    result = httpServer.arg(argName).toInt();
+    if (result >= maxValue) {
+      String resp = "406: Not Acceptable, '" + argName + "' to big.";
+      httpServer.send(406, "text/plain", resp);
+      *isError = true;
+    }
+  }
+  return result;
+}
+
+bool emplaceChars(char* ptr, String argName, int maxLen) {
+	bool fail;
+	String tmp = getStringArg(argName, maxLen, &fail);
+	if (not fail) {
+		strncpy(ptr, tmp.c_str(), maxLen);
+	}
+	return fail;
+}
+
+bool handleNetworkConfig(SavedPrefs& p) {
+	bool fail = false;
+
+  fail |= emplaceChars(p.ssid, "ssid", sizeof(p.ssid));
+  fail |= emplaceChars(p.password, "password", sizeof(p.password));
+  fail |= emplaceChars(p.inNetworkName, "inNetworkName", sizeof(p.inNetworkName));
+
+  return fail;
+}
+
+void applyNetConfig(SavedPrefs& p, bool& changed) {
+
+  if ((strncmp(prefs.storage.inNetworkName, p.inNetworkName, sizeof(p.inNetworkName)) != 0)
+      && (strnlen(p.inNetworkName, sizeof(p.inNetworkName)) > 0)) {
+    strncpy(prefs.storage.inNetworkName, p.inNetworkName, sizeof(prefs.storage.inNetworkName));
+    changed = true;
+  }
+  if ((strncmp(prefs.storage.password, p.password, sizeof(prefs.storage.password)) != 0)
+     && (strnlen(p.password, sizeof(p.password)) > 0)) {
+    strncpy(prefs.storage.password, p.password, sizeof(prefs.storage.password));
+    changed = true;
+  }
+  if ((strncmp(prefs.storage.ssid, p.ssid, sizeof(prefs.storage.ssid)) != 0)
+      && (strnlen(p.ssid, sizeof(p.ssid)) > 0)) {
+    strncpy(prefs.storage.ssid, p.ssid, sizeof(prefs.storage.ssid));
+    changed = true;
+  }
+}
+
+template<typename T>
+void applyIfChanged(T& from, T& to, bool& changed) {
+  if (from != to) {
+    to = from;
+    changed = true;
+  }
+}
+
+bool applyPrefsChange(SavedPrefs& p, bool& restartNetwork) {
+  applyNetConfig(p, restartNetwork);
+
+  bool changed = false;
+
+  return changed | restartNetwork;
+}
+
+void handleSetConfig() {
+  if (checkAuth() == false) {
+    return;
+  }
+
+  SavedPrefs p = {0};
+
+  bool fail = handleNetworkConfig(p);
+
+  if (fail) {
+    return;
+  }
+
+  //now apply new values
+  bool restartNetwork = false;
+  bool changed = applyPrefsChange(p, restartNetwork);
+
+  String result = "200: OK";
+  if (changed) {
+    prefs.save();
+    result += ", Config Saved";
+  }
+
+  delay(200);
+  if (restartNetwork) {
+    result += ", Network restarted";
+  }
+  httpServer.send(200, "text/plain", result);
+  if (restartNetwork) {
+    myServer.restart();
+  }
+}
+
+void handleRoot() {
+  if (checkAuth() == false) {
+    return;
+  }
+  //put config inside
+  String html = FPSTR(rootHtml);
+  String labels, temps, hums;
+  httpServer.send(200, "text/html", html);
+}
+
+void handleUpdate() {
+  if (checkAuth() == false) {
+    return;
+  }
+  bool fail = false;
+  String url = getStringArg("url", 1024, &fail);
+  if (fail == false && url.length() > 0) {
+      httpServer.send(200, "text/plain", "200: OK");
+      updater.execute(url);
+
+  } else {
+    httpServer.send(400, "text/plain", "400: BAD REQUEST");
+  }
+}
+
+}//namespace
+
+void MyServer::switchToConfigMode() {
+  WiFi.setAutoReconnect(false);
+  WiFi.disconnect(false);
+  WiFi.enableAP(false);
+  WiFi.enableSTA(false);
+  delay(500);
+  memset(prefs.storage.ssid, 0, sizeof(prefs.storage.ssid));
+  generateRandomPassword();
+  needsConfig = true;
+  enableSoftAP();
+}
+
+void MyServer::connectToAccessPoint() {
+  WiFi.softAPdisconnect(false);
+  WiFi.begin(prefs.storage.ssid, prefs.storage.password);
+  WiFi.setAutoReconnect(true);
+  WiFi.setAutoConnect(true);
+}
+
+void MyServer::generateRandomPassword() {
+  memset(prefs.storage.password, 0, sizeof(prefs.storage.password));
+  for(int t = 0; t < 8; t++) {
+    int r = ESP8266TrueRandom.random(10);
+    if (r < 3) {
+      prefs.storage.password[t] = ESP8266TrueRandom.random('Z'-'A') + 'A';
+
+    } else if (r < 6) {
+      prefs.storage.password[t] = ESP8266TrueRandom.random('9'-'0') + '0';
+
+    } else {
+      prefs.storage.password[t] = ESP8266TrueRandom.random('z'-'a') + 'a';
+    }
+  }
+}
+
+String MyServer::getServerIp() {
+  return needsConfig ? WiFi.softAPIP().toString() : WiFi.localIP().toString();
+}
+
+bool MyServer::isServerConfigured() {
+  return needsConfig == false;
+}
+
+String MyServer::getPassword() {
+  return prefs.storage.password[0] == 0 ? "<-->" : String(prefs.storage.password);
+}
+
+void MyServer::enableSoftAP() {
+  WiFi.softAP(prefs.storage.inNetworkName, prefs.storage.password);
+}
+
+void MyServer::restart() {
+  httpServer.stop();
+  WiFi.softAPdisconnect(false);
+  WiFi.setAutoReconnect(false);
+  WiFi.setAutoConnect(false);
+  WiFi.disconnect(false);
+  WiFi.enableAP(false);
+  WiFi.enableSTA(false);
+
+  needsConfig = not prefs.hasPrefs();
+  if (needsConfig) {
+    generateRandomPassword();
+    enableSoftAP();
+
+  } else {
+    connectToAccessPoint();
+  }
+  httpServer.on("/", handleRoot);
+  httpServer.on("/config", HTTP_GET, handleGetConfig);
+  httpServer.on("/factoryReset", handleFactoryConfig);
+  httpServer.on("/config", HTTP_POST, handleSetConfig);
+  httpServer.on("/update", HTTP_POST, handleUpdate);
+  httpServer.on("/version", HTTP_GET, handleVersion);
+  httpServer.onNotFound(handleNotFound);
+
+  httpServer.begin();
+  MDNS.notifyAPChange();
+  MDNS.begin(prefs.storage.inNetworkName);
+  MDNS.addService("http", "tcp", 80);
+}
+
+String MyServer::getStatus() {
+  switch(WiFi.status()) {
+    case WL_CONNECTED:
+      return "";
+    case WL_DISCONNECTED:
+      return "Odlaczony";
+    case WL_IDLE_STATUS:
+      return "Bezczynny";
+    case WL_NO_SSID_AVAIL:
+      return "Brak SSID";
+    case WL_SCAN_COMPLETED:
+      return "Zeskanowane";
+    case WL_CONNECT_FAILED:
+      return "Blad polaczenia";
+    case WL_CONNECTION_LOST:
+      return "Utracono pol.";
+    default:
+      return "?";
+  }
+}
+
+void MyServer::update() {
+  MDNS.update();
+  httpServer.handleClient();
+}
