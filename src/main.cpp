@@ -26,12 +26,20 @@ SOFTWARE.
 #include <Wire.h>
 #include <stdlib.h>
 #include <SSD1306.h>
+#include <sha256.h>
 #include "MyServer.h"
 #include "Updater.h"
+#include "LedCtrl.h"
 
 const String versionString {"0.0.1"};
 
 SSD1306  display(0x3c, 5, 4);
+
+#include <NeoPixelBus.h>
+#define colorSaturation 128
+#define PIN_LED_DATA 13
+NeoPixelBus<NeoGrbFeature, NeoEsp8266BitBang800KbpsMethod> strip(8, PIN_LED_DATA);
+
 
 void setup() {
   Serial.begin(115200);
@@ -46,6 +54,14 @@ void setup() {
   display.drawString(0, 0, "Bootowanie");
   display.drawString(0, 16, versionString);
   display.display();
+A0
+  strip.Begin();
+  strip.Show();
+  RgbColor red(0, colorSaturation, 0);
+  for(int t = 0; t < 8; t++) {
+    strip.SetPixelColor(t, red);
+  }
+  strip.Show();
 }
 
 void normalMode() {
@@ -77,6 +93,7 @@ void configMode() {
 }
 
 void loop() {
+  /*
   if (updater.update()) {
     return;
   }
@@ -88,4 +105,8 @@ void loop() {
   } else {
     configMode();
   }
+  */
+  Serial.println("test");
+  delay(2000);
+
 }
