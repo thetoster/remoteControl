@@ -30,6 +30,13 @@
 #include <sha256.h>
 #include <ESP8266TrueRandom.h>
 
+/*
+  uint8_t pass[] = {1,2,3,4};
+  HttpCommand cmd("http://ptsv2.com/t/5kpry-1533759192/post", pass, 4, false);
+  cmd.addData("dupa", "blada");
+  int r = cmd.execute();
+ */
+
 HttpCommand::HttpCommand(String url, uint8_t* key, uint8_t keyLen, bool usePost)
 : url(url), key(key), keyLen(keyLen), usePost(usePost) {
 }

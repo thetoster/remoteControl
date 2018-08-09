@@ -31,12 +31,13 @@
 #include <Arduino.h>
 #include <vector>
 #include <ESP8266HTTPClient.h>
+#include <Executable.h>
 
-class HttpCommand {
+class HttpCommand : public Executable {
   public:
     HttpCommand(String url, uint8_t* key, uint8_t keyLen, bool usePost);
     void addData(String param, String value);
-    bool execute();
+    bool execute() override;
     String& getResponse();
   private:
     String url;
