@@ -34,7 +34,7 @@ class BatteryMonitor {
     uint16 batteryLowWarningLevel = 1;   //value in level units
     uint16 maxBattery = 900;   //for calibration ADC raw value 0..1024
     uint16 minBattery = 300;   //for calibration ADC raw value 0..1024
-    uint8_t levels = 6; //how many bars should be drawn <0,levels)
+    uint8_t levels = 1; //how many bars should be drawn <0,levels)
 
     BatteryMonitor();
     void drawAt(SSD1306& disp, int x, int y, int w = 40, int h = 10);

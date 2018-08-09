@@ -30,19 +30,23 @@ SOFTWARE.
 #include "MyServer.h"
 #include "Updater.h"
 #include "LedCtrl.h"
+#include "HttpCommand.h"
+#include "BatteryMonitor.h"
+#include "ShowTextExecutable.h"
+#include "Buttons.h"
 
 const String versionString {"0.0.1"};
 
 SSD1306  display(0x3c, 5, 4);
+BatteryMonitor batteryMonitor;
+Buttons buttons;
 
-#include <NeoPixelBus.h>
-#define colorSaturation 128
-#define PIN_LED_DATA 13
-NeoPixelBus<NeoGrbFeature, NeoEsp8266BitBang800KbpsMethod> strip(8, PIN_LED_DATA);
-
+String shTxt[8];
+String lgTxt[8];
 
 void setup() {
   Serial.begin(115200);
+  pinMode(A0, INPUT);
   display.init();
   display.displayOn();
   display.normalDisplay();
@@ -54,14 +58,17 @@ void setup() {
   display.drawString(0, 0, "Bootowanie");
   display.drawString(0, 16, versionString);
   display.display();
-A0
-  strip.Begin();
-  strip.Show();
-  RgbColor red(0, colorSaturation, 0);
+
+  buttons.begin();
   for(int t = 0; t < 8; t++) {
-    strip.SetPixelColor(t, red);
+    shTxt[t] = "No Short ";
+    shTxt[t].concat(t);
+    lgTxt[t] = "No Long ";
+    lgTxt[t].concat(t);
+    buttons.setButtonFunction(t,
+        new ShowTextExecutable(display, shTxt[t]),
+        new ShowTextExecutable(display, lgTxt[t]) );
   }
-  strip.Show();
 }
 
 void normalMode() {
@@ -106,7 +113,23 @@ void loop() {
     configMode();
   }
   */
-  Serial.println("test");
-  delay(2000);
 
+  /*
+  if (WiFi.status() == WL_CONNECTED) {
+    doDebugTest();
+  } else {
+    display.clear();
+    display.setColor(WHITE);
+    display.setTextAlignment(TEXT_ALIGN_LEFT);
+    display.setFont(ArialMT_Plain_16);
+    display.drawString(0, 0, "Waiting");
+    display.drawString(0, 20, "Status:" + WiFi.status());
+    display.display();
+  }
+*/
+  display.clear();
+  buttons.update();
+  batteryMonitor.drawAt(display, 1, 1);
+  display.display();
+  delay(25);
 }

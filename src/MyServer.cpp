@@ -40,6 +40,7 @@ static const char rootHtml[] PROGMEM =
 
 ESP8266WebServer httpServer(80);
 MyServer myServer;
+
 static const char* www_username = "Lampster";
 static const char* www_realm = "Remote Control";
 
