@@ -53,8 +53,10 @@ void BatteryMonitor::drawAt(SSD1306& disp, int x, int y, int w, int h) {
 }
 
 int BatteryMonitor::calcBatteryLevel() {
+  int reading = analogRead(A0);
   int levelRange = (maxBattery - minBattery) / levels;
-  int level = (analogRead(A0) - minBattery) / levelRange;
+  int level = (reading - minBattery) / levelRange;
   level = level < 0 ? 0 : level;
-  return level >= levels ? levels -1 : level;
+  level = level >= levels ? levels -1 : level;
+  return level;
 }
