@@ -40,15 +40,26 @@ const String versionString {"0.0.1"};
 SSD1306  display(0x3c, 5, 4);
 BatteryMonitor batteryMonitor;
 Buttons buttons;
-
-String shTxt[8];
-String lgTxt[8];
-
 LedCtrl* ledCtrl;
+
+/* Indices of Buttons and Leds are made in this way just to confuse Russians...
+Wanted order is:
+  1 2
+  3 4
+  5 6
+  7 8
+
+Hardware order is:
+  BTN   LED
+  7 3   7 0
+  6 2   6 1
+  5 1   5 2
+  4 0   4 3
+ */
 
 void setup() {
   Serial.begin(115200);
-  pinMode(A0, INPUT);
+
   display.init();
   display.displayOn();
   display.normalDisplay();
@@ -62,17 +73,8 @@ void setup() {
   display.display();
 
   ledCtrl = new LedCtrl();
-
   buttons.begin();
-  for(int t = 0; t < 8; t++) {
-    shTxt[t] = "No Short ";
-    shTxt[t].concat(t);
-    lgTxt[t] = "No Long ";
-    lgTxt[t].concat(t);
-    buttons.setButtonFunction(t,
-        new ShowTextExecutable(display, shTxt[t]),
-        new ShowTextExecutable(display, lgTxt[t]) );
-  }
+
 }
 
 void normalMode() {
@@ -103,15 +105,16 @@ void configMode() {
   delay(200);
 }
 
-bool used = false;
-void doDebugTest() {
-  if (used == false) {
-    used = true;
-    ledCtrl->blinkError(0);
-
-    ledCtrl->blinkPattern(1, String("-_-_*_*_*"), RgbColor(0,128,0));
-  }
-}
+//bool used = false;
+//void doDebugTest() {
+//  if (used == false) {
+//    used = true;
+//    ledCtrl->blinkError(2);
+//
+//    ledCtrl->blinkPattern(3, String("-_-_*_*_*"), RgbColor(0,128,0));
+//    ledCtrl->blinkPattern(4, String("-_-_*_*_*"), RgbColor(0,0,128));
+//  }
+//}
 
 void loop() {
   /*
@@ -130,16 +133,15 @@ void loop() {
 
   display.clear();
   if (WiFi.status() == WL_CONNECTED) {
-    doDebugTest();
+//    doDebugTest();
   } else {
     //display.clear();
     display.setColor(WHITE);
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.setFont(ArialMT_Plain_16);
-    display.drawString(0, 0, "Waiting");
+    display.drawString(0, 20, "Waiting");
     //display.display();
   }
-
 
   buttons.update();
   batteryMonitor.drawAt(display, 1, 1);

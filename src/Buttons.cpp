@@ -28,6 +28,8 @@
 #include <Buttons.h>
 #include <Arduino.h>
 
+static const uint8_t WANTED_TO_HARDWARE[] = {7, 3, 6, 2, 5, 1, 4, 0};
+
 void Buttons::begin() {
   if (pcf20) {
     return;
@@ -44,6 +46,7 @@ void Buttons::begin() {
 
 void Buttons::setButtonFunction(uint8_t index, Executable* shortPress, Executable* longPress) {
   if (index < 8) {
+    index = WANTED_TO_HARDWARE[index];
     buttons[index].longPressCallback = longPress;
     buttons[index].shortPressCallback = shortPress;
   }

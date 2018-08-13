@@ -34,6 +34,7 @@
 
 static NeoPixelBus<NeoRgbFeature, NeoEsp8266BitBang800KbpsMethod> strip(8, PIN_LED_DATA);
 static RgbColor BLACK_COL(0, 0, 0);
+static const uint8_t WANTED_TO_HARDWARE[] = {7, 0, 6, 1, 5, 2, 4, 3};
 
 LedCtrl::LedCtrl() {
   strip.Begin();
@@ -44,11 +45,11 @@ LedCtrl::LedCtrl() {
 }
 
 void LedCtrl::blinkPattern(int ledNo, String pattern, RgbColor color) {
-  actions.push_back(LedContext(ledNo, pattern, color));
+  actions.push_back(LedContext(WANTED_TO_HARDWARE[ledNo], pattern, color));
 }
 
 void LedCtrl::blinkError(int ledNo) {
-  actions.push_back(LedContext(ledNo, "*.*.*.*.*", RgbColor(128, 0, 0) ) );
+  actions.push_back(LedContext(WANTED_TO_HARDWARE[ledNo], "*.*.*.*.*", RgbColor(128, 0, 0) ) );
 }
 
 void LedCtrl::update() {
