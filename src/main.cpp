@@ -44,6 +44,8 @@ Buttons buttons;
 String shTxt[8];
 String lgTxt[8];
 
+LedCtrl* ledCtrl;
+
 void setup() {
   Serial.begin(115200);
   pinMode(A0, INPUT);
@@ -58,6 +60,8 @@ void setup() {
   display.drawString(0, 0, "Bootowanie");
   display.drawString(0, 16, versionString);
   display.display();
+
+  ledCtrl = new LedCtrl();
 
   buttons.begin();
   for(int t = 0; t < 8; t++) {
@@ -99,6 +103,16 @@ void configMode() {
   delay(200);
 }
 
+bool used = false;
+void doDebugTest() {
+  if (used == false) {
+    used = true;
+    ledCtrl->blinkError(0);
+
+    ledCtrl->blinkPattern(1, String("-_-_*_*_*"), RgbColor(0,128,0));
+  }
+}
+
 void loop() {
   /*
   if (updater.update()) {
@@ -114,22 +128,22 @@ void loop() {
   }
   */
 
-  /*
+  display.clear();
   if (WiFi.status() == WL_CONNECTED) {
     doDebugTest();
   } else {
-    display.clear();
+    //display.clear();
     display.setColor(WHITE);
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.setFont(ArialMT_Plain_16);
     display.drawString(0, 0, "Waiting");
-    display.drawString(0, 20, "Status:" + WiFi.status());
-    display.display();
+    //display.display();
   }
-*/
-  display.clear();
+
+
   buttons.update();
   batteryMonitor.drawAt(display, 1, 1);
   display.display();
+  ledCtrl->update();
   delay(25);
 }

@@ -29,13 +29,30 @@
 #define LedCtrl_hpp
 
 #include <Arduino.h>
+#include <list>
+#include <NeoPixelBus.h>
 
 class LedCtrl {
+
   public:
     LedCtrl();
+
+    void blinkError(int ledNo);
+    void blinkPattern(int ledNo, String pattern, RgbColor color);
+    void update();
   private:
+    struct LedContext {
+      RgbColor color;
+      String pattern;
+      long changeMillis = 0;
+      int8_t patternIndex = -1;
+      uint8_t ledIndex;
 
-
+      LedContext(uint8_t ledIndex, String pattern, RgbColor color)
+        : color(color), pattern(pattern), ledIndex(ledIndex) {}
+    };
+    std::list<LedContext> actions;
+    bool handleLedContext(LedContext& ctx, bool& isChange);
 };
 
 #endif /* LedCtrl_hpp */
