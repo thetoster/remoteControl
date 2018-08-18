@@ -1,24 +1,81 @@
-R"(
 <!doctype html>
 <html lang='pl'>
-    <head>
-        <meta charset='UTF-8'>
-        <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-        <meta http-equiv='Content-Language' content='pl'  />
-        <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
- 
-        <title>Strona główna pilotao 513
-        </title>
-
-        <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css' integrity='sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy' crossorigin='anonymous'>
-    </head>
+<head>
+  <meta charset='UTF-8'>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+  <meta http-equiv='Content-Language' content='pl'  />
+  <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
+  <title>Strona główna pilota 513</title>
+  <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css' integrity='sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy' crossorigin='anonymous'>
+</head>
 <body>
-    <script src='https://code.jquery.com/jquery-3.2.1.slim.min.js' integrity='sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN' crossorigin='anonymous'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js' integrity='sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q' crossorigin='anonymous'></script>
-    <script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js' integrity='sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4' crossorigin='anonymous'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js'></script>
+  <script src='https://code.jquery.com/jquery-3.2.1.slim.min.js' integrity='sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN' crossorigin='anonymous'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js' integrity='sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q' crossorigin='anonymous'></script>
+  <script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js' integrity='sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4' crossorigin='anonymous'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js'></script>
+
+  <form action="https://ptsv2.com/t/zsk2s-1534610811/post" method="POST">
+    <div class='container mb-4' id="methods"></div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+  
+<div id="rowPatt">
+  <div class='row'>
+    <div class='col-sm-2'>
+      <input type='text' class='form-control' name='pn-{m}-{n}' placeholder='Nazwa'>
+    </div>
+    <div class='col-4'>
+      <input type='text' class='form-control' name='pv-{m}-{n}' placeholder='Wartość'>
+    </div>
+  </div>
+</div>
+
+<div id="cardPatt">
+  <div class='card-header alert alert-primary' role='alert'>
+     Komenda guzik {m}
+  </div>
+  <div class='container mb-4'>
+    <div class='card-body'>
+      <div class='form-group'>
+         <label for='url'>URL:</label>
+         <input type='url' class='form-control' id='url-{m}' name='url-{m}' aria-describedby='urlHelp-{m}' placeholder='http://jakis.poprawny.url'>
+         <small id='urlHelp-{m}' class='form-text text-muted'>Url do wykonania akcji.</small>
+      </div>
+      <div id="params">
+         <div class='card-header alert alert-secondary' role='alert'>
+            Parametry
+         </div>
+         <div class="container mb-3" id="p-{m}">
+         </div>
+         <button id="add-{m}" type="button" class="btn btn-info">Dodaj parametr</button>
+      </div>
+    <div>
+  </div>
+</div>
+
+<script>
+$("#rowPatt").hide();
+$("#cardPatt").hide();
+
+window.onload = function(e){
+  function makeOnClickLambda(ParamNo){
+    return function() {
+      var item = $("#rowPatt");
+      var count = $("#p-" + ParamNo).children().length;
+      var html = item.html().replace(/{m}/g, ParamNo).replace(/{n}/g, count);
+      $("#p-" + ParamNo).append(html);
+    };
+  }
+
+  var item = $("#cardPatt");
+  for(t = 1; t <= 8; t++) {
+    var html = item.html().replace(/{m}/g, t);
+    $("#methods").append(html);
+    $("#add-" + t).click( makeOnClickLambda(t) );
+  }
+};
+
 
 </script>
 </body>
 </html>
-)"
