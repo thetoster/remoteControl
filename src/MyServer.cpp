@@ -38,6 +38,10 @@ static const char rootHtml[] PROGMEM =
   #include "www/index_comp.html"
 ;
 
+static const char netSetupHtml[] PROGMEM =
+    #include "www/netSetup_comp.html"
+;
+
 ESP8266WebServer httpServer(80);
 MyServer myServer;
 
@@ -47,7 +51,9 @@ static const char* www_realm = "Remote Control";
 namespace {
 
 bool checkAuth() {
-  if (httpServer.authenticate(www_username, prefs.storage.password) == false) {
+  const char* user = prefs.hasPrefs() ? prefs.storage.username : www_username;
+
+  if (httpServer.authenticate(user, prefs.storage.password) == false) {
     httpServer.requestAuthentication(DIGEST_AUTH, www_realm);
     return false;
   };
@@ -83,7 +89,7 @@ void handleVersion() {
   httpServer.send(200, "application/json", response);
 }
 
-void handleGetConfig() {
+void handleGetNetConfig() {
   if (checkAuth() == false) {
     return;
   }
@@ -98,6 +104,20 @@ void handleGetConfig() {
   String response;
   root.printTo(response);
   httpServer.send(200, "application/json", response);
+}
+
+void handleNetSetup() {
+  if (checkAuth() == false) {
+    return;
+  }
+  String html = FPSTR(netSetupHtml);
+
+  //network
+  html.replace("${ssid}", prefs.storage.ssid);
+  html.replace("${inNetworkName}", prefs.storage.inNetworkName);
+  html.replace("${username}", prefs.storage.username);
+
+  httpServer.send(200, "text/html", html);
 }
 
 String getStringArg(String argName, int maxLen, bool* isError) {
@@ -129,20 +149,22 @@ int getIntArg(String argName, int maxValue, bool* isError) {
 }
 
 bool emplaceChars(char* ptr, String argName, int maxLen) {
-	bool fail;
-	String tmp = getStringArg(argName, maxLen, &fail);
-	if (not fail) {
-		strncpy(ptr, tmp.c_str(), maxLen);
-	}
-	return fail;
+  bool fail;
+  String tmp = getStringArg(argName, maxLen, &fail);
+  if (not fail) {
+    strncpy(ptr, tmp.c_str(), maxLen);
+  }
+  return fail;
 }
 
 bool handleNetworkConfig(SavedPrefs& p) {
-	bool fail = false;
+  bool fail = false;
 
   fail |= emplaceChars(p.ssid, "ssid", sizeof(p.ssid));
   fail |= emplaceChars(p.password, "password", sizeof(p.password));
   fail |= emplaceChars(p.inNetworkName, "inNetworkName", sizeof(p.inNetworkName));
+  fail |= emplaceChars(p.username, "username", sizeof(p.username));
+  fail |= emplaceChars(p.wifiPassword, "wifiPassword", sizeof(p.wifiPassword));
 
   return fail;
 }
@@ -164,6 +186,16 @@ void applyNetConfig(SavedPrefs& p, bool& changed) {
     strncpy(prefs.storage.ssid, p.ssid, sizeof(prefs.storage.ssid));
     changed = true;
   }
+  if ((strncmp(prefs.storage.username, p.username, sizeof(prefs.storage.username)) != 0)
+       && (strnlen(p.username, sizeof(p.username)) > 0)) {
+      strncpy(prefs.storage.username, p.username, sizeof(prefs.storage.username));
+      changed = true;
+  }
+  if ((strncmp(prefs.storage.wifiPassword, p.wifiPassword, sizeof(prefs.storage.wifiPassword)) != 0)
+       && (strnlen(p.wifiPassword, sizeof(p.wifiPassword)) > 0)) {
+      strncpy(prefs.storage.wifiPassword, p.wifiPassword, sizeof(prefs.storage.wifiPassword));
+      changed = true;
+  }
 }
 
 template<typename T>
@@ -182,7 +214,7 @@ bool applyPrefsChange(SavedPrefs& p, bool& restartNetwork) {
   return changed | restartNetwork;
 }
 
-void handleSetConfig() {
+void handleSetNetConfig() {
   if (checkAuth() == false) {
     return;
   }
@@ -256,7 +288,7 @@ void MyServer::switchToConfigMode() {
 
 void MyServer::connectToAccessPoint() {
   WiFi.softAPdisconnect(false);
-  WiFi.begin(prefs.storage.ssid, prefs.storage.password);
+  WiFi.begin(prefs.storage.ssid, prefs.storage.wifiPassword);
   WiFi.setAutoReconnect(true);
   WiFi.setAutoConnect(true);
 }
@@ -311,11 +343,14 @@ void MyServer::restart() {
     connectToAccessPoint();
   }
   httpServer.on("/", handleRoot);
-  httpServer.on("/config", HTTP_GET, handleGetConfig);
+  httpServer.on("/network", HTTP_GET, handleGetNetConfig); //get current net conf as Json
+  httpServer.on("/network", HTTP_POST, handleSetNetConfig); //set new net conf and restart
+  httpServer.on("/setup", HTTP_GET, handleNetSetup);  //get page for net configuration
   httpServer.on("/factoryReset", handleFactoryConfig);
-  httpServer.on("/config", HTTP_POST, handleSetConfig);
   httpServer.on("/update", HTTP_POST, handleUpdate);
   httpServer.on("/version", HTTP_GET, handleVersion);
+//  httpServer.on("/params", HTTP_GET, handleGetButtonActions); //get buttons config as JSON
+//  httpServer.on("/params", HTTP_POST, handleSetButtonActions); //set buttons config
   httpServer.onNotFound(handleNotFound);
 
   httpServer.begin();

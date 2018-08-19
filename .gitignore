@@ -6,3 +6,4 @@
 .project
 .settings/**
 src/www/index_comp.html
+src/www/netSetup_comp.html
