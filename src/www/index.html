@@ -22,10 +22,10 @@
 <div id="rowPatt">
   <div class='row'>
     <div class='col-sm-2'>
-      <input type='text' class='form-control' name='pn-{m}-{n}' placeholder='Nazwa'>
+      <input type='text' class='form-control' id='pn-{m}-{n}' name='pn-{m}-{n}' placeholder='Nazwa'>
     </div>
     <div class='col-4'>
-      <input type='text' class='form-control' name='pv-{m}-{n}' placeholder='Wartość'>
+      <input type='text' class='form-control' id='pv-{m}-{n}' name='pv-{m}-{n}' placeholder='Wartość'>
     </div>
   </div>
 </div>
@@ -66,12 +66,36 @@ window.onload = function(e){
       $("#p-" + ParamNo).append(html);
     };
   }
-
+  
+  function fillIn(methodNo, mParams) {
+    var index = 0;
+    for (const [pn, pv] of Object.entries(mParams)) {
+        document.getElementById("add-" + methodNo).click();
+        $("#pn-" + methodNo + "-" + index).val(pn);
+        $("#pv-" + methodNo + "-" + index).val(pv);
+        index++;
+    }
+  }
+  
+  //build cards
   var item = $("#cardPatt");
   for(t = 1; t <= 8; t++) {
     var html = item.html().replace(/{m}/g, t);
     $("#methods").append(html);
     $("#add-" + t).click( makeOnClickLambda(t) );
+  }
+  //build already know params
+  var p = JSON.parse(`{
+    "1" : {
+      "p1" : 12,
+      "p2" : "ala"
+    },
+    "8" : {
+    "oko":"oko22"
+    }
+  }`);
+  for (const [key, value] of Object.entries(p)) {
+    fillIn(key, value);
   }
 };
 
