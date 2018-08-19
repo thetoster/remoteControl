@@ -74,7 +74,6 @@ void setup() {
 
   ledCtrl = new LedCtrl();
   buttons.begin();
-
 }
 
 void normalMode() {

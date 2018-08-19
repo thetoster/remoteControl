@@ -35,7 +35,7 @@ SOFTWARE.
 #include "Prefs.h"
 
 static const char rootHtml[] PROGMEM =
-  #include "www/index.html"
+  #include "www/index_comp.html"
 ;
 
 ESP8266WebServer httpServer(80);
