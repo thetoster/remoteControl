@@ -5,18 +5,17 @@
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
   <meta http-equiv='Content-Language' content='pl'  />
   <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-  <title>Strona główna pilota 513</title>
+  <title>Strona główna pilota</title>
   <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css' integrity='sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy' crossorigin='anonymous'>
 </head>
 <body>
-  <script src='https://code.jquery.com/jquery-3.2.1.slim.min.js' integrity='sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN' crossorigin='anonymous'></script>
+  <script src='https://code.jquery.com/jquery-3.2.1.min.js' integrity='sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=' crossorigin='anonymous'></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js' integrity='sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q' crossorigin='anonymous'></script>
   <script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js' integrity='sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4' crossorigin='anonymous'></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js'></script>
 
   <form action="https://ptsv2.com/t/zsk2s-1534610811/post" method="POST">
     <div class='container mb-4' id="methods"></div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary">Zapisz konfigurację</button>
   </form>
   
 <div id="rowPatt">
@@ -36,15 +35,19 @@
   </div>
   <div class='container mb-4'>
     <div class='card-body'>
-      <div class='form-group'>
+      <div class='form-group row'>
          <label for='url'>URL:</label>
-         <input type='url' class='form-control' id='url-{m}' name='url-{m}' aria-describedby='urlHelp-{m}' placeholder='http://jakis.poprawny.url'>
-         <small id='urlHelp-{m}' class='form-text text-muted'>Url do wykonania akcji.</small>
+         <input type='url' class='col-sm-4' id='url-{m}' name='url-{m}' placeholder='http://jakis.poprawny.url'>
+         <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-info">
+              <input name="post-{m}" id="post-{m}" type="checkbox" autocomplete="on">POST
+            </label>
+            <label class="btn btn-outline-info">
+              <input name="sign-{m}" id="sign-{m}" type="checkbox" autocomplete="on">SIGNATURE
+            </label>
+         </div>
       </div>
       <div id="params">
-         <div class='card-header alert alert-secondary' role='alert'>
-            Parametry
-         </div>
          <div class="container mb-3" id="p-{m}">
          </div>
          <button id="add-{m}" type="button" class="btn btn-info">Dodaj parametr</button>
@@ -66,14 +69,29 @@ window.onload = function(e){
       $("#p-" + ParamNo).append(html);
     };
   }
-  
+  function markAsChecked(chkId) {
+    $('#'+chkId)[0].checked = true;
+    $('#'+chkId).click();
+  }
+
   function fillIn(methodNo, mParams) {
     var index = 0;
     for (const [pn, pv] of Object.entries(mParams)) {
+      if (pn === "__S") {
+        //turn on SIGNATURE
+        markAsChecked("sign-" + methodNo);
+
+      } else if (pn === "__P") {
+        //turn on POST not GET
+        markAsChecked("post-" + methodNo);
+
+      } else {
+        //this is regular param, just add it
         document.getElementById("add-" + methodNo).click();
         $("#pn-" + methodNo + "-" + index).val(pn);
         $("#pv-" + methodNo + "-" + index).val(pv);
         index++;
+      }
     }
   }
   
@@ -85,18 +103,16 @@ window.onload = function(e){
     $("#add-" + t).click( makeOnClickLambda(t) );
   }
   //build already know params
-  var p = JSON.parse(`{
-    "1" : {
-      "p1" : 12,
-      "p2" : "ala"
+  $.ajax({
+    url:"http://thetosters.pl/tmp.data",
+    type:"GET",
+    success:function(msg){
+      for (const [key, value] of Object.entries(msg)) {
+        fillIn(key, value);
+      }
     },
-    "8" : {
-    "oko":"oko22"
-    }
-  }`);
-  for (const [key, value] of Object.entries(p)) {
-    fillIn(key, value);
-  }
+    dataType:"json"
+  });
 };
 
 
