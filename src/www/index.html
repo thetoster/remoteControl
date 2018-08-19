@@ -13,7 +13,7 @@
   <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js' integrity='sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q' crossorigin='anonymous'></script>
   <script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js' integrity='sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4' crossorigin='anonymous'></script>
 
-  <form action="https://ptsv2.com/t/zsk2s-1534610811/post" method="POST">
+  <form action="/config" method="POST">
     <div class='container mb-4' id="methods"></div>
     <button type="submit" class="btn btn-primary">Zapisz konfigurację</button>
   </form>
@@ -61,7 +61,7 @@ $("#rowPatt").hide();
 $("#cardPatt").hide();
 
 window.onload = function(e){
-  function makeOnClickLambda(ParamNo){
+  function lambda(ParamNo){
     return function() {
       var item = $("#rowPatt");
       var count = $("#p-" + ParamNo).children().length;
@@ -69,27 +69,27 @@ window.onload = function(e){
       $("#p-" + ParamNo).append(html);
     };
   }
-  function markAsChecked(chkId) {
+  function mark(chkId) {
     $('#'+chkId)[0].checked = true;
     $('#'+chkId).click();
   }
 
-  function fillIn(methodNo, mParams) {
+  function fillIn(no, mParams) {
     var index = 0;
     for (const [pn, pv] of Object.entries(mParams)) {
       if (pn === "__S") {
         //turn on SIGNATURE
-        markAsChecked("sign-" + methodNo);
+        mark("sign-" + no);
 
       } else if (pn === "__P") {
         //turn on POST not GET
-        markAsChecked("post-" + methodNo);
+        mark("post-" + no);
 
       } else {
         //this is regular param, just add it
-        document.getElementById("add-" + methodNo).click();
-        $("#pn-" + methodNo + "-" + index).val(pn);
-        $("#pv-" + methodNo + "-" + index).val(pv);
+        document.getElementById("add-" + no).click();
+        $("#pn-" + no + "-" + index).val(pn);
+        $("#pv-" + no + "-" + index).val(pv);
         index++;
       }
     }
@@ -100,15 +100,15 @@ window.onload = function(e){
   for(t = 1; t <= 8; t++) {
     var html = item.html().replace(/{m}/g, t);
     $("#methods").append(html);
-    $("#add-" + t).click( makeOnClickLambda(t) );
+    $("#add-" + t).click( lambda(t) );
   }
   //build already know params
   $.ajax({
-    url:"http://thetosters.pl/tmp.data",
+    url:"/params",
     type:"GET",
     success:function(msg){
-      for (const [key, value] of Object.entries(msg)) {
-        fillIn(key, value);
+      for (const [k, v] of Object.entries(msg)) {
+        fillIn(k, v);
       }
     },
     dataType:"json"
