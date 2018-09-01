@@ -35,8 +35,7 @@
 class LedCtrl {
 
   public:
-    LedCtrl();
-
+    void begin();
     void blinkError(int ledNo);
     void blinkPattern(int ledNo, String pattern, RgbColor color);
     void update();
@@ -55,4 +54,5 @@ class LedCtrl {
     bool handleLedContext(LedContext& ctx, bool& isChange);
 };
 
+extern LedCtrl ledCtrl;
 #endif /* LedCtrl_hpp */

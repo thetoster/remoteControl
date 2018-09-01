@@ -68,6 +68,10 @@ void HttpCommand::calcHMac(String& data, String& nonce, String& hmac) {
   }
 }
 
+void HttpCommand::dropResponse() {
+  response = "";
+}
+
 bool HttpCommand::execute() {
   HTTPClient http;
 
@@ -145,4 +149,8 @@ int HttpCommand::doGet(HTTPClient& http) {
 
 String& HttpCommand::getResponse() {
   return response;
+}
+
+void HttpCommand::serialize(File& file) {
+  //TODO: write
 }

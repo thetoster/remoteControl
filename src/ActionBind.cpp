@@ -26,6 +26,7 @@
  Author: Bartłomiej Żarnowski (Toster)
  */
 #include <ActionBind.h>
+#include "LedCtrl.h"
 
 static RgbColor LIME_COL(32, 128, 32);
 static RgbColor RED_COL(128, 0, 0);
@@ -35,3 +36,17 @@ ActionBind::ActionBind(uint8_t buttonIndex, Executable* cmd)
   parseResponse(false), lcdLine1(buttonIndex), lcdLine2(buttonIndex), cmd(cmd) {
 }
 
+ActionBind::ActionBind()
+: buttonIndex(0), successColor(LIME_COL), failColor(RED_COL),
+  parseResponse(false), lcdLine1(buttonIndex), lcdLine2(buttonIndex), cmd(nullptr) {
+}
+
+bool ActionBind::execute() {
+  bool success = (cmd != nullptr) ? cmd->execute() : false;
+  if (success) {
+    ledCtrl.blinkPattern(buttonIndex, successPattern, successColor);
+  } else {
+    ledCtrl.blinkPattern(buttonIndex, failPattern, failColor);
+  }
+  return success;
+}

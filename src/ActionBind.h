@@ -31,7 +31,7 @@
 #include "Executable.h"
 #include <NeoPixelBus.h>
 
-class ActionBind {
+class ActionBind : public Executable {
   public:
     uint8_t buttonIndex;
     String successPattern = "--";
@@ -44,7 +44,12 @@ class ActionBind {
 
     Executable* cmd;
 
+    ActionBind();
     ActionBind(uint8_t buttonIndex, Executable* cmd);
+    virtual ~ActionBind() override {}
+
+    virtual bool execute()  override;
+    virtual void serialize(File& file) override {};
 };
 
 #endif /* ActionBind_hpp */

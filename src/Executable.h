@@ -28,10 +28,13 @@ Created on: Aug 9, 2018
 #ifndef Executable_hpp
 #define Executable_hpp
 
+#include <FS.h>
+
 class Executable {
   public:
     virtual ~Executable() = default;
     virtual bool execute() = 0;
+    virtual void serialize(File& file) = 0;
 };
 
 #endif /* Executable_hpp */

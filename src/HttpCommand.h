@@ -38,7 +38,9 @@ class HttpCommand : public Executable {
     HttpCommand(String url, uint8_t* key, uint8_t keyLen, bool usePost);
     void addData(String param, String value);
     bool execute() override;
+    virtual void serialize(File& file) override;
     String& getResponse();
+    void dropResponse();
   private:
     String url;
     uint8_t* key;

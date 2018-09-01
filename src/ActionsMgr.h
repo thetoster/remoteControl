@@ -21,41 +21,33 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 
- Buttons.h
- Created on: Aug 9, 2018
+ ActionsMgr.h
+ Created on: Aug 27, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
-#ifndef Buttons_hpp
-#define Buttons_hpp
+#ifndef ActionsMgr_hpp
+#define ActionsMgr_hpp
 
-#include <PCF8574.h>
-#include <Wire.h>
-#include "Executable.h"
+#include <FS.h>
 
-#define BTN_READ_DELAY (50)
-//time in ms after which long press is recognized
-#define BTN_LONG_PRESS_TICKS (1500 / BTN_READ_DELAY)
-
-class Buttons {
+class ActionBind;
+class ActionsMgr {
   public:
-    Buttons() {};
     void begin();
-    void update();
-    void setButtonFunction(uint8_t index, Executable* shortPress, Executable* longPress);
+    void loadActions();
+    void putAction(ActionBind* act);
+    void removeAction(uint8_t index);
   private:
-    struct ButtonContext {
-            Executable* shortPressCallback = nullptr;
-            Executable* longPressCallback = nullptr;
-            bool lastPressed;
-            uint8_t pressedTickCount;
-        };
+    ActionBind* actions[8];
 
-    PCF8574* pcf20 = nullptr;
-    long lastMilis = 0;
-    ButtonContext buttons[8];
+    ActionBind* loadAction(File& fileIn);
+    void saveAction(File& fileIn, ActionBind* action);
 
-    void handleButtonUpdate(ButtonContext& ctx, bool isPressed);
+    void writeString(File& file, String& str);
+    void readString(File& file, String& str);
+
+    void presistAction(ActionBind* action);
+    void removeFromPersistance(uint8_t index);
 };
 
-extern Buttons buttons;
-#endif /* Buttons_hpp */
+#endif /* ActionsMgr_hpp */

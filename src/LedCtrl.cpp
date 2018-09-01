@@ -36,7 +36,7 @@ static NeoPixelBus<NeoRgbFeature, NeoEsp8266BitBang800KbpsMethod> strip(8, PIN_L
 static RgbColor BLACK_COL(0, 0, 0);
 static const uint8_t WANTED_TO_HARDWARE[] = {7, 0, 6, 1, 5, 2, 4, 3};
 
-LedCtrl::LedCtrl() {
+void LedCtrl::begin() {
   strip.Begin();
   for(int t = 0; t < 8; t++) {
     strip.SetPixelColor(t, BLACK_COL);

@@ -34,13 +34,16 @@ SOFTWARE.
 #include "BatteryMonitor.h"
 #include "ShowTextExecutable.h"
 #include "Buttons.h"
+#include "ActionsMgr.h"
+#include "ActionBind.h"
 
 const String versionString {"0.0.1"};
 
 SSD1306  display(0x3c, 5, 4);
 BatteryMonitor batteryMonitor;
 Buttons buttons;
-LedCtrl* ledCtrl;
+LedCtrl ledCtrl;
+ActionsMgr actionsMgr;
 
 /* Indices of Buttons and Leds are made in this way just to confuse Russians...
 Wanted order is:
@@ -57,6 +60,24 @@ Hardware order is:
   4 0   4 3
  */
 
+void setDebugActions() {
+  uint8_t pass[] = {1,2,3,4};
+  HttpCommand* cmd = new HttpCommand("http://ptsv2.com/t/5kpry-1533759192/post", pass, 4, false);
+  cmd->addData("dupa", "blada");
+
+  ActionBind* act = new ActionBind();
+  act->buttonIndex = 0;
+  act->cmd = cmd;
+  actionsMgr.putAction(act);
+
+  ///
+  cmd = new HttpCommand("1533759192/post", pass, 4, false);
+  act = new ActionBind();
+  act->buttonIndex = 1;
+  act->cmd = cmd;
+  actionsMgr.putAction(act);
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -72,8 +93,10 @@ void setup() {
   display.drawString(0, 16, versionString);
   display.display();
 
-  ledCtrl = new LedCtrl();
+  ledCtrl.begin();
   buttons.begin();
+  actionsMgr.begin();
+  setDebugActions();
 }
 
 void normalMode() {
@@ -104,17 +127,6 @@ void configMode() {
   delay(200);
 }
 
-//bool used = false;
-//void doDebugTest() {
-//  if (used == false) {
-//    used = true;
-//    ledCtrl->blinkError(2);
-//
-//    ledCtrl->blinkPattern(3, String("-_-_*_*_*"), RgbColor(0,128,0));
-//    ledCtrl->blinkPattern(4, String("-_-_*_*_*"), RgbColor(0,0,128));
-//  }
-//}
-
 void loop() {
   /*
   if (updater.update()) {
@@ -131,20 +143,20 @@ void loop() {
   */
 
   display.clear();
-  if (WiFi.status() == WL_CONNECTED) {
-//    doDebugTest();
-  } else {
-    //display.clear();
+  if (WiFi.status() != WL_CONNECTED) {
     display.setColor(WHITE);
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.setFont(ArialMT_Plain_16);
     display.drawString(0, 20, "Waiting");
-    //display.display();
+    batteryMonitor.drawAt(display, 1, 1);
+    display.display();
+    delay(25);
+    return;
   }
 
   buttons.update();
   batteryMonitor.drawAt(display, 1, 1);
   display.display();
-  ledCtrl->update();
+  ledCtrl.update();
   delay(25);
 }
