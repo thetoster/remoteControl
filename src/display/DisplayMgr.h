@@ -41,12 +41,17 @@ class DisplayMgr {
     void begin();
     void update();
     void setMode(DisplayMgrMode mode);
+    void showText(String line1, String line2);
   private:
     DisplayMgrMode mode;
+    unsigned long outTime;
+    uint8_t animFrame;
+    String lines[2];
 
     void normalMode();
     void configMode();
     void waitForWifiMode();
 };
 
+extern DisplayMgr displayMgr;
 #endif /* DisplayMgr_hpp */

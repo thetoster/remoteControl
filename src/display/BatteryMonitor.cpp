@@ -28,6 +28,13 @@
 #include <Arduino.h>
 #include "BatteryMonitor.h"
 
+#define XBM_BATTERY_WIDTH 16
+#define XBM_BATTERY_HEIGHT 16
+static unsigned char BATTERY_XBM[] = {
+   0x00, 0x00, 0xc0, 0x03, 0xc0, 0x03, 0xf0, 0x0f, 0xf0, 0x0f, 0x10, 0x08,
+   0x10, 0x08, 0x10, 0x08, 0x10, 0x08, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f,
+   0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0x00, 0x00 };
+
 BatteryMonitor::BatteryMonitor() : blink(true) {
   pinMode(A0, INPUT);
 }
@@ -35,6 +42,9 @@ BatteryMonitor::BatteryMonitor() : blink(true) {
 void BatteryMonitor::drawAt(SSD1306& disp, int x, int y, int w, int h) {
   int batLevel = calcBatteryLevel();
   blink = (batLevel <= batteryLowWarningLevel) ? not blink : true;
+  disp.drawXbm(x, y, XBM_BATTERY_WIDTH, XBM_BATTERY_HEIGHT, BATTERY_XBM);
+  x += XBM_BATTERY_WIDTH + 1;
+  y += (XBM_BATTERY_HEIGHT - h) / 2;
   if (blink) {
     disp.drawRect(x, y, w, h);
   }

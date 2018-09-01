@@ -67,6 +67,8 @@ void setDebugActions() {
   ActionBind* act = new ActionBind();
   act->buttonIndex = 0;
   act->cmd = cmd;
+  act->lcdLine1 = "Action 1";
+  act->lcdLine2 = "";
   actionsMgr.putAction(act);
 
   ///
@@ -74,6 +76,8 @@ void setDebugActions() {
   act = new ActionBind();
   act->buttonIndex = 1;
   act->cmd = cmd;
+  act->lcdLine1 = "Action 2";
+  act->lcdLine2 = "Red fail";
   actionsMgr.putAction(act);
 }
 
@@ -107,6 +111,8 @@ void loop() {
     displayMgr.setMode(DISPL_WAIT_FOR_CON);
     delay(25);
     return;
+  } else {
+    displayMgr.setMode(DISPL_NORMAL);
   }
 
   buttons.update();

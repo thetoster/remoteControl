@@ -29,8 +29,24 @@
 #include <network/MyServer.h>
 #include "BatteryMonitor.h"
 
+#define XBM_NET_WIFI_WIDTH 16
+#define XBM_NET_WIFI_HEIGHT 16
+static unsigned char NET_WIFI_XBM[] = {
+   0x00, 0x00, 0x00, 0x00, 0xf0, 0x0f, 0x08, 0x10, 0xe4, 0x27, 0x10, 0x08,
+   0xc0, 0x03, 0x20, 0x04, 0x80, 0x01, 0x00, 0x00, 0x00, 0x00, 0x80, 0x01,
+   0xc0, 0x03, 0xc0, 0x03, 0x80, 0x01, 0x00, 0x00 };
+
+#define XBM_ACCESS_POINT_WIDTH 16
+#define XBM_ACCESS_POINT_HEIGHT 16
+static unsigned char ACCESS_POINT_XBM[] = {
+  0xe0, 0x07, 0xf0, 0x0f, 0x3c, 0x3c, 0xce, 0x73, 0xe6, 0x67, 0x73, 0xce,
+  0x3b, 0xdc, 0x9b, 0xd9, 0x9b, 0xd9, 0x3b, 0xdc, 0x73, 0xce, 0x66, 0x66,
+  0x0e, 0x70, 0x3c, 0x3c, 0x18, 0x18, 0x00, 0x00, };
+
 SSD1306  display(0x3c, 5, 4);
 BatteryMonitor batteryMonitor;
+
+#define PRESENTATION_TIME (4 * 1000)
 
 void DisplayMgr::begin() {
   display.init();
@@ -70,13 +86,20 @@ void DisplayMgr::normalMode() {
   display.setColor(WHITE);
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_16);
-  //TODO: Status bar
-
-  display.setFont(ArialMT_Plain_24);
-  //TODO: Main area
-
+  for(int t = 0; t < 2; t ++) {
+    if (lines[t].length() > 0) {
+      display.drawString(0, 20 + t * 20, lines[t]);
+    }
+  }
+  if (millis() > outTime) {
+    lines[0] = "";
+    lines[1] = "";
+    outTime = (unsigned long)-1;
+  }
   batteryMonitor.drawAt(display, 1, 1);
-
+  display.drawXbm(127 - XBM_NET_WIFI_WIDTH, 0,
+      XBM_NET_WIFI_WIDTH, XBM_NET_WIFI_HEIGHT,
+      NET_WIFI_XBM);
   display.display();
 }
 
@@ -86,6 +109,15 @@ void DisplayMgr::waitForWifiMode() {
   display.setFont(ArialMT_Plain_16);
   display.drawString(0, 20, "Czekaj");
   batteryMonitor.drawAt(display, 1, 1);
+  if (animFrame == 0) {
+    display.drawXbm(127 - XBM_NET_WIFI_WIDTH, 0,
+          XBM_NET_WIFI_WIDTH, XBM_NET_WIFI_HEIGHT,
+          NET_WIFI_XBM);
+  }
+  if ((millis() > outTime) or (outTime == (unsigned long)-1)) {
+    animFrame = animFrame == 0 ? 1 : 0;
+    outTime = millis() + 500;
+  }
   display.display();
 }
 
@@ -97,10 +129,23 @@ void DisplayMgr::configMode() {
   display.drawString(0, 0, "Konfiguracja");
   display.drawString(0, 16, myServer.getServerIp());
   display.drawString(0, 37, myServer.getPassword());
+
+  batteryMonitor.drawAt(display, 1, 1);
+  display.drawXbm(127 - XBM_ACCESS_POINT_WIDTH, 0,
+      XBM_ACCESS_POINT_WIDTH, XBM_ACCESS_POINT_HEIGHT,
+      ACCESS_POINT_XBM);
+
   display.display();
   myServer.update();
 }
 
 void DisplayMgr::setMode(DisplayMgrMode mode) {
   this->mode = mode;
+}
+
+void DisplayMgr::showText(String line1, String line2) {
+  lines[0] = line1;
+  lines[1] = line2;
+  outTime = (line1.length() + line2.length()) > 0 ? millis() + PRESENTATION_TIME
+      : (unsigned long)-1;
 }

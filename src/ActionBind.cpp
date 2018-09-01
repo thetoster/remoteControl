@@ -27,6 +27,7 @@
  */
 #include <ActionBind.h>
 #include "LedCtrl.h"
+#include "display/DisplayMgr.h"
 
 static RgbColor LIME_COL(32, 128, 32);
 static RgbColor RED_COL(128, 0, 0);
@@ -43,6 +44,7 @@ ActionBind::ActionBind()
 
 bool ActionBind::execute() {
   bool success = (cmd != nullptr) ? cmd->execute() : false;
+  displayMgr.showText(lcdLine1, lcdLine2);
   if (success) {
     ledCtrl.blinkPattern(buttonIndex, successPattern, successColor);
   } else {
