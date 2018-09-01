@@ -28,7 +28,7 @@
 #ifndef ActionBind_hpp
 #define ActionBind_hpp
 
-#include "Executable.h"
+#include "executables/Executable.h"
 #include <NeoPixelBus.h>
 
 class ActionBind : public Executable {

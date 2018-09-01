@@ -21,41 +21,21 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 
- Buttons.h
+ NotAssignedButtonExecutable.cpp
  Created on: Aug 9, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
-#ifndef Buttons_hpp
-#define Buttons_hpp
+#include "ShowTextExecutable.h"
 
-#include <PCF8574.h>
-#include <Wire.h>
-#include "executables/Executable.h"
+ShowTextExecutable::ShowTextExecutable(SSD1306& display, String& text)
+: display(display), text(text) {
+}
 
-#define BTN_READ_DELAY (50)
-//time in ms after which long press is recognized
-#define BTN_LONG_PRESS_TICKS (1500 / BTN_READ_DELAY)
-
-class Buttons {
-  public:
-    Buttons() {};
-    void begin();
-    void update();
-    void setButtonFunction(uint8_t index, Executable* shortPress, Executable* longPress);
-  private:
-    struct ButtonContext {
-            Executable* shortPressCallback = nullptr;
-            Executable* longPressCallback = nullptr;
-            bool lastPressed;
-            uint8_t pressedTickCount;
-        };
-
-    PCF8574* pcf20 = nullptr;
-    long lastMilis = 0;
-    ButtonContext buttons[8];
-
-    void handleButtonUpdate(ButtonContext& ctx, bool isPressed);
-};
-
-extern Buttons buttons;
-#endif /* Buttons_hpp */
+bool ShowTextExecutable::execute() {
+  display.clear();
+  display.setColor(WHITE);
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  display.setFont(ArialMT_Plain_24);
+  display.drawString(0, 20, text);
+  display.display();
+}

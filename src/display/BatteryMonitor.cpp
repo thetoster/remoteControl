@@ -21,42 +21,42 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 
- HttpCommand.h
+ BatteryMonitor.cpp
  Created on: Aug 8, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
-#ifndef HttpCommand_hpp
-#define HttpCommand_hpp
-
 #include <Arduino.h>
-#include <vector>
-#include <ESP8266HTTPClient.h>
-#include <Executable.h>
+#include "BatteryMonitor.h"
 
-class HttpCommand : public Executable {
-  public:
-    HttpCommand(String url, uint8_t* key, uint8_t keyLen, bool usePost);
-    void addData(String param, String value);
-    bool execute() override;
-    virtual void serialize(File& file) override;
-    String& getResponse();
-    void dropResponse();
-  private:
-    String url;
-    uint8_t* key;
-    uint8_t keyLen;
-    bool usePost;
-    String response;
-    std::vector<std::pair<String, String>> data;
+BatteryMonitor::BatteryMonitor() : blink(true) {
+  pinMode(A0, INPUT);
+}
 
-    void calcHMac(String& data, String& nonce, String& hmac);
+void BatteryMonitor::drawAt(SSD1306& disp, int x, int y, int w, int h) {
+  int batLevel = calcBatteryLevel();
+  blink = (batLevel <= batteryLowWarningLevel) ? not blink : true;
+  if (blink) {
+    disp.drawRect(x, y, w, h);
+  }
+  h -= 4;
+  w -= 4;
+  w /= levels;
+  w -= 2;
+  y += 2;
 
-    void buildPayload(String& data);
-    int doPost(HTTPClient& http);
+  for(; batLevel > 0; batLevel--) {
+    x += 2;
+    disp.fillRect(x, y, w , h);
+    x += w + 2;
+  }
 
-    void buildQuery(String& query);
-    void urlEncoded(String& in, String& out);
-    int doGet(HTTPClient& http);
-};
+}
 
-#endif /* HttpCommand_hpp */
+int BatteryMonitor::calcBatteryLevel() {
+  int reading = analogRead(A0);
+  int levelRange = (maxBattery - minBattery) / levels;
+  int level = (reading - minBattery) / levelRange;
+  level = level < 0 ? 0 : level;
+  level = level >= levels ? levels -1 : level;
+  return level;
+}

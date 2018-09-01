@@ -21,21 +21,45 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 
- NotAssignedButtonExecutable.cpp
- Created on: Aug 9, 2018
+ HttpCommand.h
+ Created on: Aug 8, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
-#include <ShowTextExecutable.h>
+#ifndef HttpCommand_hpp
+#define HttpCommand_hpp
 
-ShowTextExecutable::ShowTextExecutable(SSD1306& display, String& text)
-: display(display), text(text) {
-}
+#include <Arduino.h>
+#include <vector>
+#include <ESP8266HTTPClient.h>
+#include "Executable.h"
 
-bool ShowTextExecutable::execute() {
-  display.clear();
-  display.setColor(WHITE);
-  display.setTextAlignment(TEXT_ALIGN_LEFT);
-  display.setFont(ArialMT_Plain_24);
-  display.drawString(0, 20, text);
-  display.display();
-}
+#define HTTP_COMMAND_TYPE_MARKER 'H'
+
+class HttpCommand : public Executable {
+  public:
+    HttpCommand(String url, uint8_t* key, uint8_t keyLen, bool usePost);
+    HttpCommand(File& file);
+    void addData(String param, String value);
+    bool execute() override;
+    virtual void serialize(File& file) override;
+    String& getResponse();
+    void dropResponse();
+  private:
+    String url;
+    uint8_t* key;
+    uint8_t keyLen;
+    bool usePost;
+    String response;
+    std::vector<std::pair<String, String>> data;
+
+    void calcHMac(String& data, String& nonce, String& hmac);
+
+    void buildPayload(String& data);
+    int doPost(HTTPClient& http);
+
+    void buildQuery(String& query);
+    void urlEncoded(String& in, String& out);
+    int doGet(HTTPClient& http);
+};
+
+#endif /* HttpCommand_hpp */

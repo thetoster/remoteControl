@@ -27,15 +27,16 @@ SOFTWARE.
 #include <stdlib.h>
 #include <SSD1306.h>
 #include <sha256.h>
-#include "MyServer.h"
-#include "Updater.h"
 #include "LedCtrl.h"
-#include "HttpCommand.h"
-#include "BatteryMonitor.h"
-#include "ShowTextExecutable.h"
 #include "Buttons.h"
 #include "ActionsMgr.h"
 #include "ActionBind.h"
+#include "network/MyServer.h"
+#include "network/Updater.h"
+#include "display/BatteryMonitor.h"
+#include "executables/HttpCommand.h"
+#include "executables/ShowTextExecutable.h"
+#include <ESP8266WiFi.h>
 
 const String versionString {"0.0.1"};
 

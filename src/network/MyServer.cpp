@@ -26,13 +26,13 @@ SOFTWARE.
  Author: Bartłomiej Żarnowski (Toster)
  */
 #include <ESP8266TrueRandom.h>
-#include <MyServer.h>
+#include "MyServer.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
 #include "Updater.h"
-#include "Prefs.h"
+#include "../Prefs.h"
 
 static const char rootHtml[] PROGMEM =
   #include "www/index_comp.html"

@@ -25,7 +25,7 @@
  Created on: Aug 8, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
-#include <LedCtrl.h>
+#include "LedCtrl.h"
 
 #define MAX_COLOR_SATURATION 128
 #define PIN_LED_DATA 13

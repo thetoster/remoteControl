@@ -25,10 +25,11 @@
  Created on: Aug 8, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
-#include <HttpCommand.h>
+#include "HttpCommand.h"
 #include <ArduinoJson.h>
 #include <sha256.h>
 #include <ESP8266TrueRandom.h>
+#include "FileHelper.h"
 
 /*
   uint8_t pass[] = {1,2,3,4};
@@ -39,6 +40,25 @@
 
 HttpCommand::HttpCommand(String url, uint8_t* key, uint8_t keyLen, bool usePost)
 : url(url), key(key), keyLen(keyLen), usePost(usePost) {
+}
+
+HttpCommand::HttpCommand(File& file) {
+  readString(file, url);
+  readPrimitive(file, keyLen);
+  if (keyLen > 0) {
+    key = (uint8_t*)malloc(keyLen);
+    file.read(key, keyLen);
+  }
+  readPrimitive(file, usePost);
+  uint8_t tmp = 0;
+  readPrimitive(file, tmp);
+  for(int t = 0; t < tmp; t++) {
+    String param;
+    String value;
+    readString(file, param);
+    readString(file, value);
+    data.push_back(std::make_pair(param, value));
+  }
 }
 
 void HttpCommand::addData(String param, String value) {
@@ -152,5 +172,18 @@ String& HttpCommand::getResponse() {
 }
 
 void HttpCommand::serialize(File& file) {
-  //TODO: write
+  uint8_t tmp = HTTP_COMMAND_TYPE_MARKER;
+  writePrimitive(file, tmp);  //skip this at load!
+  writeString(file, url);
+  writePrimitive(file, keyLen);
+  if (keyLen > 0) {
+    file.write(key, keyLen);
+  }
+  writePrimitive(file, usePost);
+  tmp = data.size();
+  writePrimitive(file, tmp);
+  for(auto it = data.begin(); it != data.end(); it++) {
+    writeString(file, it->first);
+    writeString(file, it->second);
+  }
 }

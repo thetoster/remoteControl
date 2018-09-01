@@ -43,9 +43,6 @@ class ActionsMgr {
     ActionBind* loadAction(File& fileIn);
     void saveAction(File& fileIn, ActionBind* action);
 
-    void writeString(File& file, String& str);
-    void readString(File& file, String& str);
-
     void presistAction(ActionBind* action);
     void removeFromPersistance(uint8_t index);
 };

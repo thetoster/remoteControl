@@ -29,9 +29,8 @@
 #include <ActionsMgr.h>
 #include "ActionBind.h"
 #include "Buttons.h"
-
-#define writePrimitive(file, val) file.write((const uint8_t*)&val, sizeof(val))
-#define readPrimitive(file, val) file.read((uint8_t*)&val, sizeof(val))
+#include "FileHelper.h"
+#include "executables/HttpCommand.h"
 
 //filenames are: /A, /B... etc
 #define FILENAME_TYPE(path) char path[3]; path[0] = '/'; path[2] = 0
@@ -52,7 +51,7 @@ void ActionsMgr::putAction(ActionBind* act) {
     }
     actions[act->buttonIndex] = act;
     buttons.setButtonFunction(act->buttonIndex, act, nullptr);
-//TODO:enable    presistAction(act);
+    presistAction(act);
   }
 }
 
@@ -124,9 +123,16 @@ ActionBind* ActionsMgr::loadAction(File& fileIn) {
 
   uint8_t isExecutable;
   readPrimitive(fileIn, isExecutable);
-  if (isExecutable != 0) {
-    //TODO: rozparsowac rozne typy
+
+  if (isExecutable == HTTP_COMMAND_TYPE_MARKER) {
+    action->cmd = new HttpCommand(fileIn);
   }
+#ifdef LOG_ENABLED
+  else {
+    Serial.print("Unknown serialized type:");
+    Serial.print(isExecutable);
+  }
+#endif
   return action;
 }
 
@@ -153,25 +159,4 @@ void ActionsMgr::saveAction(File& fileOut, ActionBind* action) {
   if (isExecutable != 0) {
     action->cmd->serialize(fileOut);
   }
-}
-
-void ActionsMgr::readString(File& file, String& str) {
-  int len;
-  readPrimitive(file, len);
-  str.reserve(len);
-  char buf[10];
-  while(len > 0) {
-    size_t r = file.read((uint8_t*)buf, len >= 10 ? 10 : len);
-    //OMG... my eyes are bleeding
-    for(size_t t = 0; t < r; t++) {
-      str.concat(buf[t]);
-    }
-    len -= r;
-  }
-}
-
-void ActionsMgr::writeString(File& file, String& str) {
-  int len = str.length();
-  writePrimitive(file, len);
-  file.write((const uint8_t*)str.c_str(), len);
 }

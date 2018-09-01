@@ -21,41 +21,20 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 
- Buttons.h
- Created on: Aug 9, 2018
+ FileHelper.h
+ Created on: Sep 1, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
-#ifndef Buttons_hpp
-#define Buttons_hpp
+#ifndef FileHelper_hpp
+#define FileHelper_hpp
 
-#include <PCF8574.h>
-#include <Wire.h>
-#include "executables/Executable.h"
+#include <Arduino.h>
+#include <FS.h>
 
-#define BTN_READ_DELAY (50)
-//time in ms after which long press is recognized
-#define BTN_LONG_PRESS_TICKS (1500 / BTN_READ_DELAY)
+#define writePrimitive(file, val) file.write((const uint8_t*)&val, sizeof(val))
+#define readPrimitive(file, val) file.read((uint8_t*)&val, sizeof(val))
 
-class Buttons {
-  public:
-    Buttons() {};
-    void begin();
-    void update();
-    void setButtonFunction(uint8_t index, Executable* shortPress, Executable* longPress);
-  private:
-    struct ButtonContext {
-            Executable* shortPressCallback = nullptr;
-            Executable* longPressCallback = nullptr;
-            bool lastPressed;
-            uint8_t pressedTickCount;
-        };
+void writeString(File& file, String& str);
+void readString(File& file, String& str);
 
-    PCF8574* pcf20 = nullptr;
-    long lastMilis = 0;
-    ButtonContext buttons[8];
-
-    void handleButtonUpdate(ButtonContext& ctx, bool isPressed);
-};
-
-extern Buttons buttons;
-#endif /* Buttons_hpp */
+#endif /* FileHelper_hpp */

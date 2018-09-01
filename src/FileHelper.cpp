@@ -21,42 +21,30 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 
- BatteryMonitor.cpp
- Created on: Aug 8, 2018
+ FileHelper.cpp
+ Created on: Sep 1, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
-#include <Arduino.h>
-#include <BatteryMonitor.h>
+#include <FileHelper.h>
 
-BatteryMonitor::BatteryMonitor() : blink(true) {
-  pinMode(A0, INPUT);
-}
-
-void BatteryMonitor::drawAt(SSD1306& disp, int x, int y, int w, int h) {
-  int batLevel = calcBatteryLevel();
-  blink = (batLevel <= batteryLowWarningLevel) ? not blink : true;
-  if (blink) {
-    disp.drawRect(x, y, w, h);
+void readString(File& file, String& str) {
+  int len;
+  readPrimitive(file, len);
+  str.reserve(len);
+  char buf[10];
+  while(len > 0) {
+    size_t r = file.read((uint8_t*)buf, len >= 10 ? 10 : len);
+    //OMG... my eyes are bleeding
+    for(size_t t = 0; t < r; t++) {
+      str.concat(buf[t]);
+    }
+    len -= r;
   }
-  h -= 4;
-  w -= 4;
-  w /= levels;
-  w -= 2;
-  y += 2;
-
-  for(; batLevel > 0; batLevel--) {
-    x += 2;
-    disp.fillRect(x, y, w , h);
-    x += w + 2;
-  }
-
 }
 
-int BatteryMonitor::calcBatteryLevel() {
-  int reading = analogRead(A0);
-  int levelRange = (maxBattery - minBattery) / levels;
-  int level = (reading - minBattery) / levelRange;
-  level = level < 0 ? 0 : level;
-  level = level >= levels ? levels -1 : level;
-  return level;
+void writeString(File& file, String& str) {
+  int len = str.length();
+  writePrimitive(file, len);
+  file.write((const uint8_t*)str.c_str(), len);
 }
+
