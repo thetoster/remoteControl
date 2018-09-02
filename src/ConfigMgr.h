@@ -21,42 +21,35 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 
- Buttons.h
- Created on: Aug 9, 2018
+ ConfigMgr.h
+ Created on: Sep 2, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
-#ifndef Buttons_hpp
-#define Buttons_hpp
+#ifndef ConfigMgr_hpp
+#define ConfigMgr_hpp
 
-#include <PCF8574.h>
-#include <Wire.h>
-#include "executables/Executable.h"
+#include <Arduino.h>
+#include <executables/Executable.h>
+#include <vector>
+#include <functional>
 
-#define BTN_READ_DELAY (50)
-//time in ms after which long press is recognized
-#define BTN_LONG_PRESS_TICKS (1500 / BTN_READ_DELAY)
-
-class Buttons {
+class ConfigMgr : public Executable {
   public:
-    Buttons() {};
-    void begin();
-    void update();
-    void setButtonFunction(uint8_t index, Executable* shortPress, Executable* longPress);
-    void getButtonFunction(uint8_t index, Executable* &shortPress, Executable* &longPress);
+    uint8_t page;
+
+    virtual ~ConfigMgr() {}
+
+    virtual bool execute() override;
+    virtual void serialize(File& file) override {};
   private:
-    struct ButtonContext {
-            Executable* shortPressCallback = nullptr;
-            Executable* longPressCallback = nullptr;
-            bool lastPressed;
-            uint8_t pressedTickCount;
-        };
+    std::vector<Executable*> actions;
 
-    PCF8574* pcf20 = nullptr;
-    long lastMilis = 0;
-    ButtonContext buttons[8];
-
-    void handleButtonUpdate(ButtonContext& ctx, bool isPressed);
+    Executable* addLambda(std::function<bool()> lambda);
+    void runSelectedAction();
+    void updateDisplayedPage();
+    void end();
 };
 
-extern Buttons buttons;
-#endif /* Buttons_hpp */
+extern ConfigMgr configMgr;
+
+#endif /* ConfigMgr_hpp */

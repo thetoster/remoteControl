@@ -44,6 +44,14 @@ void Buttons::begin() {
   }
 }
 
+void Buttons::getButtonFunction(uint8_t index, Executable* &shortPress, Executable* &longPress) {
+  if (index < 8) {
+    index = WANTED_TO_HARDWARE[index];
+    shortPress = buttons[index].shortPressCallback;
+    longPress = buttons[index].longPressCallback;
+  }
+}
+
 void Buttons::setButtonFunction(uint8_t index, Executable* shortPress, Executable* longPress) {
   if (index < 8) {
     index = WANTED_TO_HARDWARE[index];

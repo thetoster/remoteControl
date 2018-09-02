@@ -31,6 +31,7 @@
 #include "Buttons.h"
 #include "FileHelper.h"
 #include "executables/HttpCommand.h"
+#include "ConfigMgr.h"
 
 //filenames are: /A, /B... etc
 #define FILENAME_TYPE(path) char path[3]; path[0] = '/'; path[2] = 0
@@ -77,7 +78,8 @@ void ActionsMgr::removeFromPersistance(uint8_t index) {
 }
 
 void ActionsMgr::loadActions() {
-  FILENAME_TYPE(path);
+  //make things crash ;(
+/*  FILENAME_TYPE(path);
   for(int t = 0; t < 8; t++) {
     if (actions[t] != nullptr) {
       delete actions[t];
@@ -86,7 +88,7 @@ void ActionsMgr::loadActions() {
     }
     SET_FILENAME(path, t);
     File f = SPIFFS.open(path, "r");
-    if (f) {
+    if (f and (f.size() > 0)) {
 #ifdef LOG_ENABLED
       if (actions[t]->buttonIndex != t) {
         Serial.print("Action has wrong button index, expected:");
@@ -96,13 +98,21 @@ void ActionsMgr::loadActions() {
       }
 #endif
       actions[t] = loadAction(f);
-      f.close();
       buttons.setButtonFunction(t, actions[t], nullptr);
     }
+    f.close();
   }
+  Serial.println("=====");
+  */
+  //longpress on button 7 always run config
+  Executable* tmp;
+  Executable* tmp2;
+  buttons.getButtonFunction(7, tmp, tmp2);
+  buttons.setButtonFunction(7, tmp, &configMgr);
 }
 
 ActionBind* ActionsMgr::loadAction(File& fileIn) {
+  Serial.print("Load->");
   ActionBind* action = new ActionBind();
   readPrimitive(fileIn, action->buttonIndex);
 
@@ -133,6 +143,7 @@ ActionBind* ActionsMgr::loadAction(File& fileIn) {
     Serial.print(isExecutable);
   }
 #endif
+  Serial.println("<-end");
   return action;
 }
 

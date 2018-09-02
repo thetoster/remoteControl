@@ -38,6 +38,8 @@ class LedCtrl {
     void begin();
     void blinkError(int ledNo);
     void blinkPattern(int ledNo, String pattern, RgbColor color);
+    void turnOn(int ledNo, RgbColor color);
+    void turnOffAll();
     void update();
   private:
     struct LedContext {

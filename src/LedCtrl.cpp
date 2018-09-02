@@ -69,6 +69,18 @@ void LedCtrl::update() {
   }
 }
 
+void LedCtrl::turnOn(int ledNo, RgbColor color) {
+  strip.SetPixelColor(WANTED_TO_HARDWARE[ledNo], color );
+  strip.Show();
+}
+
+void LedCtrl::turnOffAll() {
+  for(int t = 0; t < 8; t++) {
+    strip.SetPixelColor(t, BLACK_COL);
+  }
+  strip.Show();
+}
+
 bool LedCtrl::handleLedContext(LedContext& ctx, bool& isChange) {
   long curMillis = millis();
   if (ctx.changeMillis < curMillis) {

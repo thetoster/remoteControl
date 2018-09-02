@@ -30,6 +30,7 @@ SOFTWARE.
 #include "Buttons.h"
 #include "ActionsMgr.h"
 #include "ActionBind.h"
+#include "ConfigMgr.h"
 #include "network/MyServer.h"
 #include "network/Updater.h"
 #include "display/DisplayMgr.h"
@@ -43,6 +44,8 @@ DisplayMgr displayMgr;
 Buttons buttons;
 LedCtrl ledCtrl;
 ActionsMgr actionsMgr;
+ConfigMgr configMgr;
+wl_status_t lastWifiStatus;
 
 /* Indices of Buttons and Leds are made in this way just to confuse Russians...
 Wanted order is:
@@ -87,8 +90,11 @@ void setup() {
   ledCtrl.begin();
   buttons.begin();
   actionsMgr.begin();
+  actionsMgr.loadActions();
 
   setDebugActions();
+  lastWifiStatus = WL_DISCONNECTED;
+  displayMgr.setMode(DISPL_WAIT_FOR_CON);
 }
 
 void loop() {
@@ -111,8 +117,12 @@ void loop() {
     displayMgr.setMode(DISPL_WAIT_FOR_CON);
     delay(25);
     return;
+
   } else {
-    displayMgr.setMode(DISPL_NORMAL);
+    if (lastWifiStatus != WL_CONNECTED) {
+      lastWifiStatus = WL_CONNECTED;
+      displayMgr.setMode(DISPL_NORMAL);
+    }
   }
 
   buttons.update();

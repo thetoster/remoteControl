@@ -47,4 +47,5 @@ class ActionsMgr {
     void removeFromPersistance(uint8_t index);
 };
 
+extern ActionsMgr actionsMgr;
 #endif /* ActionsMgr_hpp */
