@@ -39,6 +39,7 @@ class LedCtrl {
     void blinkError(int ledNo);
     void blinkPattern(int ledNo, String pattern, RgbColor color);
     void turnOn(int ledNo, RgbColor color);
+    void turnOff(int ledNo);
     void turnOffAll();
     void update();
   private:

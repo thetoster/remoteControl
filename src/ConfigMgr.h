@@ -48,6 +48,12 @@ class ConfigMgr : public Executable {
     void runSelectedAction();
     void updateDisplayedPage();
     void end();
+    void showUsedKeys();
+    void releaseAllActions();
+    void clearUsedKeys();
+    void factoryReset();
+    void confirmableAction(String line1, String line2,
+        std::function<void()> execOnConfirm);
 };
 
 extern ConfigMgr configMgr;

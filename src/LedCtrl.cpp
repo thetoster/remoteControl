@@ -69,6 +69,11 @@ void LedCtrl::update() {
   }
 }
 
+void LedCtrl::turnOff(int ledNo) {
+  strip.SetPixelColor(WANTED_TO_HARDWARE[ledNo], BLACK_COL);
+  strip.Show();
+}
+
 void LedCtrl::turnOn(int ledNo, RgbColor color) {
   strip.SetPixelColor(WANTED_TO_HARDWARE[ledNo], color );
   strip.Show();

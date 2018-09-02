@@ -38,6 +38,8 @@ class MyServer {
     void restart();
     void update();
     void switchToConfigMode();
+    void begin();
+    void end();
   private:
     bool needsConfig;
 

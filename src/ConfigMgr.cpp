@@ -31,10 +31,14 @@
 #include <display/DisplayMgr.h>
 #include <LedCtrl.h>
 #include <ActionsMgr.h>
+#include <Prefs.h>
+#include <network/MyServer.h>
 
 static RgbColor NAVI_KEY_COL(32, 32, 128);
 static RgbColor SELECT_KEY_COL(32, 128, 32);
 static RgbColor QUIT_KEY_COL(128, 32, 32);
+static RgbColor USED_KEY_COL(32, 128, 32);
+static RgbColor UNUSED_KEY_COL(64, 16, 16);
 
 bool ConfigMgr::execute() {
   Serial.println("----CONFIG");
@@ -53,7 +57,7 @@ bool ConfigMgr::execute() {
     return true;
   }), nullptr);
 
-  //next on buton 1
+  //next on button 1
   buttons.setButtonFunction(1, addLambda([this](){
       if (this->page < 4) {
         this->page ++;
@@ -64,7 +68,7 @@ bool ConfigMgr::execute() {
       return true;
     }), nullptr);
 
-  //next on buton 1
+  //next on button 2
   buttons.setButtonFunction(2, addLambda([this](){
       runSelectedAction();
       return true;
@@ -90,7 +94,76 @@ bool ConfigMgr::execute() {
 }
 
 void ConfigMgr::runSelectedAction() {
+  switch(page) {
+      case 0:
+        myServer.begin();
+        break;
+      case 1:
+        showUsedKeys();
+        break;
+      case 2:
+        clearUsedKeys();
+        break;
+      case 3:
+        factoryReset();
+        break;
+      case 4:
+        end();
+        break;
+    }
+}
 
+void ConfigMgr::confirmableAction(String line1, String line2,
+    std::function<void()> execOnConfirm) {
+  releaseAllActions();
+  displayMgr.showText(line1, line2);
+  ledCtrl.turnOffAll();
+  ledCtrl.turnOn(0, SELECT_KEY_COL);
+  ledCtrl.turnOn(1, QUIT_KEY_COL);
+
+  //button 1 -> Confirm
+  buttons.setButtonFunction(0, addLambda([this, execOnConfirm](){
+      execOnConfirm();
+      releaseAllActions();
+      this->execute();  //go back to config mode
+      return true;
+    }), nullptr);
+
+  //button 2 -> cancel
+  buttons.setButtonFunction(1, addLambda([this](){
+      releaseAllActions();
+      this->execute();  //go back to config mode
+      return true;
+    }), nullptr);
+}
+
+void ConfigMgr::clearUsedKeys() {
+  confirmableAction("Wyczyscic", "przypisania?", [this]() {
+    for(int t = 0; t < 8; t++) {
+      actionsMgr.removeAction(t);
+    }
+  });
+}
+
+void ConfigMgr::factoryReset() {
+  confirmableAction("Wyzerowac", "konfiguracje?", [this]() {
+    for(int t = 0; t < 8; t++) {
+      actionsMgr.removeAction(t);
+    }
+    prefs.defaultValues();
+    prefs.save();
+  });
+}
+void ConfigMgr::showUsedKeys() {
+  releaseAllActions();
+  //yes, yes encapsulation ;P
+  for(int t = 0; t < 8; t++) {
+    ledCtrl.turnOn(t, actionsMgr.actions[t] != nullptr ? USED_KEY_COL
+                                                       : UNUSED_KEY_COL);
+
+    //all buttons will move to config mode
+    buttons.setButtonFunction(t, this, nullptr);
+  }
 }
 
 void ConfigMgr::updateDisplayedPage() {
@@ -113,9 +186,18 @@ void ConfigMgr::updateDisplayedPage() {
   }
 }
 
+void ConfigMgr::releaseAllActions() {
+  for(auto it = actions.begin(); it != actions.end(); it++) {
+    delete *it;
+  }
+  actions.clear();
+}
+
 void ConfigMgr::end() {
+  myServer.end();
   ledCtrl.turnOffAll();
   displayMgr.setMode(DISPL_NORMAL);
+  releaseAllActions();
   actionsMgr.loadActions();
 }
 

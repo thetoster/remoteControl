@@ -71,6 +71,7 @@ void handleFactoryConfig() {
   if (checkAuth() == false) {
     return;
   }
+  //redirect to confirMgr?
   prefs.defaultValues();
   prefs.save();
   httpServer.send(200, "text/plain", "200: OK");
@@ -383,4 +384,12 @@ String MyServer::getStatus() {
 void MyServer::update() {
   MDNS.update();
   httpServer.handleClient();
+}
+
+void MyServer::begin() {
+  //TODO: implement
+}
+
+void MyServer::end() {
+  //TODO: implement
 }

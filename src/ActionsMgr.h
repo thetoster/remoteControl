@@ -33,12 +33,13 @@
 class ActionBind;
 class ActionsMgr {
   public:
+    ActionBind* actions[8];
+
     void begin();
     void loadActions();
     void putAction(ActionBind* act);
     void removeAction(uint8_t index);
   private:
-    ActionBind* actions[8];
 
     ActionBind* loadAction(File& fileIn);
     void saveAction(File& fileIn, ActionBind* action);
