@@ -37,6 +37,7 @@ SOFTWARE.
 #include "executables/HttpCommand.h"
 #include "executables/ShowTextExecutable.h"
 #include <ESP8266WiFi.h>
+#include <Prefs.h>
 
 const String versionString {"0.0.1"};
 
@@ -85,46 +86,36 @@ void setDebugActions() {
 }
 
 void setup() {
+#if LOG_ENABLED==1
   Serial.begin(115200);
+#endif
   displayMgr.begin();
   ledCtrl.begin();
   buttons.begin();
   actionsMgr.begin();
-  actionsMgr.loadActions();
 
+  //debug ----
   setDebugActions();
   lastWifiStatus = WL_DISCONNECTED;
-  displayMgr.setMode(DISPL_WAIT_FOR_CON);
+  //------^
+
+  if (not prefs.hasPrefs()) {
+    displayMgr.setMode(DISPL_AP_CONFIG);
+    myServer.begin();
+
+  } else {
+    actionsMgr.loadActions();
+    displayMgr.setMode(DISPL_WAIT_FOR_CON);
+  }
 }
 
 void loop() {
-  /*
   if (updater.update()) {
     return;
   }
 
-  //no update in progress
-  if (myServer.isServerConfigured()) {
-    normalMode();
-
-  } else {
-    configMode();
-  }
-  */
-
+  myServer.update();
   displayMgr.update();
-  if (WiFi.status() != WL_CONNECTED) {
-    displayMgr.setMode(DISPL_WAIT_FOR_CON);
-    delay(25);
-    return;
-
-  } else {
-    if (lastWifiStatus != WL_CONNECTED) {
-      lastWifiStatus = WL_CONNECTED;
-      displayMgr.setMode(DISPL_NORMAL);
-    }
-  }
-
   buttons.update();
   ledCtrl.update();
   delay(25);

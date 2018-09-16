@@ -32,6 +32,7 @@
 #include "FileHelper.h"
 #include "executables/HttpCommand.h"
 #include "ConfigMgr.h"
+#include "debug.h"
 
 //filenames are: /A, /B... etc
 #define FILENAME_TYPE(path) char path[3]; path[0] = '/'; path[2] = 0
@@ -89,7 +90,7 @@ void ActionsMgr::loadActions() {
     SET_FILENAME(path, t);
     File f = SPIFFS.open(path, "r");
     if (f and (f.size() > 0)) {
-#ifdef LOG_ENABLED
+#if LOG_ENABLED==1
       if (actions[t]->buttonIndex != t) {
         Serial.print("Action has wrong button index, expected:");
         Serial.print(t);
@@ -102,7 +103,7 @@ void ActionsMgr::loadActions() {
     }
     f.close();
   }
-  Serial.println("=====");
+  LOG_LN("=====");
   */
   //longpress on button 7 always run config
   Executable* tmp;
@@ -112,7 +113,7 @@ void ActionsMgr::loadActions() {
 }
 
 ActionBind* ActionsMgr::loadAction(File& fileIn) {
-  Serial.print("Load->");
+  LOG_LN("Load->");
   ActionBind* action = new ActionBind();
   readPrimitive(fileIn, action->buttonIndex);
 
@@ -137,13 +138,13 @@ ActionBind* ActionsMgr::loadAction(File& fileIn) {
   if (isExecutable == HTTP_COMMAND_TYPE_MARKER) {
     action->cmd = new HttpCommand(fileIn);
   }
-#ifdef LOG_ENABLED
+#if LOG_ENABLED==1
   else {
     Serial.print("Unknown serialized type:");
     Serial.print(isExecutable);
   }
 #endif
-  Serial.println("<-end");
+  LOG_LN("<-end");
   return action;
 }
 

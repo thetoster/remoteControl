@@ -33,14 +33,16 @@
 enum DisplayMgrMode {
   DISPL_WAIT_FOR_CON = 0, //wait for connect to AP
   DISPL_NORMAL = 1, //normal state of work
-  DISPL_CONFIG //enabled AP configuration
+  DISPL_CONFIG, //enabled configuration screens
+  DISPL_AP_CONFIG, //enabled AccessPoint name & password configuration
 };
 
 class DisplayMgr {
   public:
     void begin();
     void update();
-    void setMode(DisplayMgrMode mode);
+    void setMode(DisplayMgrMode mode) { this->mode = mode; }
+    DisplayMgrMode getMode() { return mode; }
     void showText(String line1, String line2);
   private:
     DisplayMgrMode mode;
@@ -51,6 +53,7 @@ class DisplayMgr {
     void normalMode();
     void configMode();
     void waitForWifiMode();
+    void configureAPMode();
 };
 
 extern DisplayMgr displayMgr;

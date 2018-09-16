@@ -382,14 +382,19 @@ String MyServer::getStatus() {
 }
 
 void MyServer::update() {
-  MDNS.update();
-  httpServer.handleClient();
+  if (enabled) {
+    MDNS.update();
+    httpServer.handleClient();
+  }
 }
 
 void MyServer::begin() {
-  //TODO: implement
+  enabled = true;
+  restart();
 }
 
 void MyServer::end() {
-  //TODO: implement
+  httpServer.stop();
+  WiFi.setAutoConnect(true);
+  enabled = false;
 }

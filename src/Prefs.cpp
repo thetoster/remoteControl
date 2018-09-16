@@ -27,6 +27,7 @@ SOFTWARE.
  */
 #include <Prefs.h>
 #include <EEPROM.h>
+#include <debug.h>
 
 Prefs prefs;
 
@@ -36,12 +37,12 @@ void Prefs::load() {
   EEPROM.end();
   uint8_t expectedCrc = calcCRC();
 
-  Serial.print("StorageCrc:");
-  Serial.println(storage.crc);
-  Serial.print("Expected CRC:");
-  Serial.println(expectedCrc);
-  Serial.print("Is zero prefs:");
-  Serial.println(isZeroPrefs());
+  LOG("StorageCrc:");
+  LOG_LN(storage.crc);
+  LOG("Expected CRC:");
+  LOG_LN(expectedCrc);
+  LOG("Is zero prefs:");
+  LOG_LN(isZeroPrefs());
   Serial.flush();
 
   if (not hasPrefs()) {
@@ -65,7 +66,7 @@ bool Prefs::isZeroPrefs() {
 }
 
 void Prefs::defaultValues() {
-  Serial.println("Reset prefs to default");
+  LOG_LN("Reset prefs to default");
 
   memset(&storage, 0, sizeof(storage));
   strcpy(&storage.inNetworkName[0], "RemoteCtrl");

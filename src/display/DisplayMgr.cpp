@@ -60,6 +60,9 @@ void DisplayMgr::update() {
     case DISPL_WAIT_FOR_CON:
       waitForWifiMode();
       break;
+    case DISPL_AP_CONFIG:
+      configureAPMode();
+      break;
 
     default:
     case DISPL_NORMAL:
@@ -125,17 +128,33 @@ void DisplayMgr::configMode() {
       display.drawString(0, 20 + t * 20, lines[t]);
     }
   }
-  //Access point icon
-  /*
-  display.drawXbm(127 - XBM_ACCESS_POINT_WIDTH, 0,
-      XBM_ACCESS_POINT_WIDTH, XBM_ACCESS_POINT_HEIGHT,
-      ACCESS_POINT_XBM);
-*/
+
   display.display();
 }
 
-void DisplayMgr::setMode(DisplayMgrMode mode) {
-  this->mode = mode;
+void DisplayMgr::configureAPMode() {
+  display.setColor(WHITE);
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  display.setFont(ArialMT_Plain_16);
+
+  display.drawString(0, 20, WiFi.softAPIP().toString());
+  if (prefs.storage.password[0] == 0) {
+    display.drawString(0, 40, "Do Factory R.");
+  } else {
+    display.drawString(0, 40, String(prefs.storage.password));
+  }
+
+  batteryMonitor.drawAt(display, 1, 1);
+  if (animFrame == 0) {
+    //Access point icon
+    display.drawXbm(127 - XBM_ACCESS_POINT_WIDTH, 0,
+    XBM_ACCESS_POINT_WIDTH, XBM_ACCESS_POINT_HEIGHT, ACCESS_POINT_XBM);
+  }
+  if ((millis() > outTime) or (outTime == (unsigned long) -1)) {
+    animFrame = animFrame == 0 ? 1 : 0;
+    outTime = millis() + 500;
+  }
+  display.display();
 }
 
 void DisplayMgr::showText(String line1, String line2) {

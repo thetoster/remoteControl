@@ -42,6 +42,7 @@ class MyServer {
     void end();
   private:
     bool needsConfig;
+    bool enabled = false;
 
     void generateRandomPassword();
     void enableSoftAP();

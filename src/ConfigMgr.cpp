@@ -33,6 +33,7 @@
 #include <ActionsMgr.h>
 #include <Prefs.h>
 #include <network/MyServer.h>
+#include <debug.h>
 
 static RgbColor NAVI_KEY_COL(32, 32, 128);
 static RgbColor SELECT_KEY_COL(32, 128, 32);
@@ -41,7 +42,7 @@ static RgbColor USED_KEY_COL(32, 128, 32);
 static RgbColor UNUSED_KEY_COL(64, 16, 16);
 
 bool ConfigMgr::execute() {
-  Serial.println("----CONFIG");
+  LOG_LN("CONFIG");
   for(int t = 0; t < 8; t++) {
     buttons.setButtonFunction(t, nullptr, nullptr);
   }
