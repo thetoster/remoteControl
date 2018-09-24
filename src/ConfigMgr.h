@@ -41,13 +41,13 @@ class ConfigMgr : public Executable {
 
     virtual bool execute() override;
     virtual void serialize(File& file) override {};
+    void end();
   private:
     std::vector<Executable*> actions;
 
     Executable* addLambda(std::function<bool()> lambda);
     void runSelectedAction();
     void updateDisplayedPage();
-    void end();
     void showUsedKeys();
     void releaseAllActions();
     void clearUsedKeys();

@@ -33,6 +33,8 @@ SOFTWARE.
 #include <ArduinoJson.h>
 #include "Updater.h"
 #include "../Prefs.h"
+#include <ConfigMgr.h>
+#include "../debug.h"
 
 static const char rootHtml[] PROGMEM =
   #include "www/index_comp.html"
@@ -244,7 +246,10 @@ void handleSetNetConfig() {
   }
   httpServer.send(200, "text/plain", result);
   if (restartNetwork) {
-    myServer.restart();
+  	configMgr.end();
+		if (prefs.hasPrefs()) {
+			myServer.connectToAccessPoint();
+		}
   }
 }
 
@@ -289,9 +294,16 @@ void MyServer::switchToConfigMode() {
 
 void MyServer::connectToAccessPoint() {
   WiFi.softAPdisconnect(false);
+  WiFi.enableAP(false);
   WiFi.begin(prefs.storage.ssid, prefs.storage.wifiPassword);
   WiFi.setAutoReconnect(true);
   WiFi.setAutoConnect(true);
+//Dangerous, beware!
+//  LOG("Connect to access point:'");
+//  LOG(prefs.storage.ssid);
+//  LOG("', password:'");
+//  LOG(prefs.storage.wifiPassword);
+//  LOG_LN("'");
 }
 
 void MyServer::generateRandomPassword() {
@@ -308,6 +320,8 @@ void MyServer::generateRandomPassword() {
       prefs.storage.password[t] = ESP8266TrueRandom.random('z'-'a') + 'a';
     }
   }
+//Nice for debug:
+//strcpy(prefs.storage.password, "TestTest");
 }
 
 String MyServer::getServerIp() {

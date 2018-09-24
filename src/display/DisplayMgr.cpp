@@ -26,6 +26,7 @@
  Author: Bartłomiej Żarnowski (Toster)
  */
 #include <display/DisplayMgr.h>
+#include <display/NetworkMonitor.h>
 #include <network/MyServer.h>
 #include "BatteryMonitor.h"
 #include "XbmIcons.h"
@@ -34,6 +35,7 @@
 
 SSD1306  display(0x3c, 5, 4);
 BatteryMonitor batteryMonitor;
+NetworkMonitor networkMonitor;
 
 #define PRESENTATION_TIME (4 * 1000)
 
@@ -61,6 +63,7 @@ void DisplayMgr::update() {
     case DISPL_WAIT_FOR_CON:
       waitForWifiMode();
       break;
+
     case DISPL_AP_CONFIG:
       configureAPMode();
       break;
@@ -89,9 +92,7 @@ void DisplayMgr::normalMode() {
     outTime = (unsigned long)-1;
   }
   batteryMonitor.drawAt(display, 1, 1);
-  display.drawXbm(127 - XBM_NET_WIFI_WIDTH, 0,
-      XBM_NET_WIFI_WIDTH, XBM_NET_WIFI_HEIGHT,
-      NET_WIFI_XBM);
+  networkMonitor.drawAt(display, display.getWidth() - networkMonitor.getWidth(), 0);
   display.display();
 }
 
@@ -101,15 +102,7 @@ void DisplayMgr::waitForWifiMode() {
   display.setFont(ArialMT_Plain_16);
   display.drawString(0, 20, "Czekaj");
   batteryMonitor.drawAt(display, 1, 1);
-  if (animFrame == 0) {
-    display.drawXbm(127 - XBM_NET_WIFI_WIDTH, 0,
-          XBM_NET_WIFI_WIDTH, XBM_NET_WIFI_HEIGHT,
-          NET_WIFI_XBM);
-  }
-  if ((millis() > outTime) or (outTime == (unsigned long)-1)) {
-    animFrame = animFrame == 0 ? 1 : 0;
-    outTime = millis() + 500;
-  }
+  networkMonitor.drawAt(display, display.getWidth() - networkMonitor.getWidth(), 0);
   display.display();
 }
 
@@ -130,6 +123,7 @@ void DisplayMgr::configMode() {
     }
   }
 
+  networkMonitor.drawAt(display, display.getWidth() - networkMonitor.getWidth(), 0);
   display.display();
 }
 
@@ -159,11 +153,8 @@ void DisplayMgr::configureAPMode() {
   }
 
   batteryMonitor.drawAt(display, 1, 1);
-  if ((animFrame % 2) == 0) {
-    //Access point icon
-    display.drawXbm(127 - XBM_ACCESS_POINT_WIDTH, 0,
-    XBM_ACCESS_POINT_WIDTH, XBM_ACCESS_POINT_HEIGHT, ACCESS_POINT_XBM);
-  }
+  networkMonitor.drawAt(display, display.getWidth() - networkMonitor.getWidth(), 0);
+
   if ((millis() > outTime) or (outTime == (unsigned long) -1)) {
     animFrame ++;
     if (animFrame > 10) {

@@ -40,13 +40,13 @@ class MyServer {
     void switchToConfigMode();
     void begin();
     void end();
+    void connectToAccessPoint();
   private:
     bool needsConfig;
     bool enabled = false;
 
     void generateRandomPassword();
     void enableSoftAP();
-    void connectToAccessPoint();
 };
 
 extern MyServer myServer;

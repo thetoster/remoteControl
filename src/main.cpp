@@ -89,6 +89,8 @@ void setup() {
 #if LOG_ENABLED==1
   Serial.begin(115200);
 #endif
+  WiFi.printDiag(Serial);
+  Serial.setDebugOutput(true);
   prefs.load();
   displayMgr.begin();
   ledCtrl.begin();
