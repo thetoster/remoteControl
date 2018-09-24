@@ -53,7 +53,7 @@ class ConfigMgr : public Executable {
     void clearUsedKeys();
     void factoryReset();
     void confirmableAction(String line1, String line2,
-        std::function<void()> execOnConfirm);
+        std::function<void()> execOnConfirm, bool backToConfig = true);
 };
 
 extern ConfigMgr configMgr;

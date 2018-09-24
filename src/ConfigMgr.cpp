@@ -33,7 +33,8 @@
 #include <ActionsMgr.h>
 #include <Prefs.h>
 #include <network/MyServer.h>
-#include <debug.h>
+#include "debug.h"
+#include <NeoPixelBus.h>
 
 static RgbColor NAVI_KEY_COL(32, 32, 128);
 static RgbColor SELECT_KEY_COL(32, 128, 32);
@@ -115,7 +116,7 @@ void ConfigMgr::runSelectedAction() {
 }
 
 void ConfigMgr::confirmableAction(String line1, String line2,
-    std::function<void()> execOnConfirm) {
+    std::function<void()> execOnConfirm, bool backToConfig) {
   releaseAllActions();
   displayMgr.showText(line1, line2);
   ledCtrl.turnOffAll();
@@ -123,10 +124,12 @@ void ConfigMgr::confirmableAction(String line1, String line2,
   ledCtrl.turnOn(1, QUIT_KEY_COL);
 
   //button 1 -> Confirm
-  buttons.setButtonFunction(0, addLambda([this, execOnConfirm](){
+  buttons.setButtonFunction(0, addLambda([this, execOnConfirm, backToConfig](){
       execOnConfirm();
-      releaseAllActions();
-      this->execute();  //go back to config mode
+      if (backToConfig) {
+      	releaseAllActions();
+      	this->execute();  //go back to config mode
+      }
       return true;
     }), nullptr);
 
@@ -153,8 +156,12 @@ void ConfigMgr::factoryReset() {
     }
     prefs.defaultValues();
     prefs.save();
-  });
+    ledCtrl.turnOffAll();
+    displayMgr.setMode(DISPL_AP_CONFIG);
+    myServer.begin();
+  }, false);
 }
+
 void ConfigMgr::showUsedKeys() {
   releaseAllActions();
   //yes, yes encapsulation ;P

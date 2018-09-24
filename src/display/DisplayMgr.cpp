@@ -29,7 +29,8 @@
 #include <network/MyServer.h>
 #include "BatteryMonitor.h"
 #include "XbmIcons.h"
-
+#include <ESP8266WiFi.h>
+#include <Prefs.h>
 
 SSD1306  display(0x3c, 5, 4);
 BatteryMonitor batteryMonitor;
@@ -137,7 +138,20 @@ void DisplayMgr::configureAPMode() {
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   display.setFont(ArialMT_Plain_16);
 
-  display.drawString(0, 20, WiFi.softAPIP().toString());
+  //show name and IP
+  if (prefs.storage.inNetworkName[0] != 0) {
+  	if (animFrame < 5) {
+  		display.drawString(0, 20, prefs.storage.inNetworkName);
+
+  	} else {
+  		display.drawString(0, 20, WiFi.softAPIP().toString());
+  	}
+
+  } else {
+  	display.drawString(0, 20, WiFi.softAPIP().toString());
+  }
+
+  //Show password
   if (prefs.storage.password[0] == 0) {
     display.drawString(0, 40, "Do Factory R.");
   } else {
@@ -145,13 +159,16 @@ void DisplayMgr::configureAPMode() {
   }
 
   batteryMonitor.drawAt(display, 1, 1);
-  if (animFrame == 0) {
+  if ((animFrame % 2) == 0) {
     //Access point icon
     display.drawXbm(127 - XBM_ACCESS_POINT_WIDTH, 0,
     XBM_ACCESS_POINT_WIDTH, XBM_ACCESS_POINT_HEIGHT, ACCESS_POINT_XBM);
   }
   if ((millis() > outTime) or (outTime == (unsigned long) -1)) {
-    animFrame = animFrame == 0 ? 1 : 0;
+    animFrame ++;
+    if (animFrame > 10) {
+    	animFrame = 0;
+    }
     outTime = millis() + 500;
   }
   display.display();

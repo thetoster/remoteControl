@@ -89,6 +89,7 @@ void setup() {
 #if LOG_ENABLED==1
   Serial.begin(115200);
 #endif
+  prefs.load();
   displayMgr.begin();
   ledCtrl.begin();
   buttons.begin();
