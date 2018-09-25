@@ -54,6 +54,7 @@ class ConfigMgr : public Executable {
     void factoryReset();
     void confirmableAction(String line1, String line2,
         std::function<void()> execOnConfirm, bool backToConfig = true);
+    int getTypeId() override {return -1;}
 };
 
 extern ConfigMgr configMgr;

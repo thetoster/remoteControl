@@ -50,6 +50,7 @@ class ActionBind : public Executable {
 
     virtual bool execute()  override;
     virtual void serialize(File& file) override {};
+    int getTypeId() override {return cmd ? cmd->getTypeId() : -1;}
 };
 
 #endif /* ActionBind_hpp */

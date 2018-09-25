@@ -28,13 +28,14 @@ SOFTWARE.
 #ifndef WifiServer_hpp
 #define WifiServer_hpp
 
+#include <network/ActionToServerBridge.h>
+
 class MyServer {
   public:
     bool isServerConfigured();
 
     String getServerIp();
     String getPassword();
-    String getStatus();
     void restart();
     void update();
     void switchToConfigMode();
@@ -44,6 +45,7 @@ class MyServer {
   private:
     bool needsConfig;
     bool enabled = false;
+    ActionToServerBridge* atsBridge;
 
     void generateRandomPassword();
     void enableSoftAP();

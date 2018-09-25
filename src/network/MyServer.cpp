@@ -364,7 +364,10 @@ void MyServer::restart() {
   httpServer.on("/factoryReset", handleFactoryConfig);
   httpServer.on("/update", HTTP_POST, handleUpdate);
   httpServer.on("/version", HTTP_GET, handleVersion);
-//  httpServer.on("/params", HTTP_GET, handleGetButtonActions); //get buttons config as JSON
+  httpServer.on("/params", HTTP_GET, [this](){
+  	httpServer.send(200, "application/json", atsBridge->actionsAsParams());
+  }); //get buttons config as JSON
+
 //  httpServer.on("/params", HTTP_POST, handleSetButtonActions); //set buttons config
   httpServer.onNotFound(handleNotFound);
 
@@ -372,27 +375,8 @@ void MyServer::restart() {
   MDNS.notifyAPChange();
   MDNS.begin(prefs.storage.inNetworkName);
   MDNS.addService("http", "tcp", 80);
-}
-
-String MyServer::getStatus() {
-  switch(WiFi.status()) {
-    case WL_CONNECTED:
-      return "";
-    case WL_DISCONNECTED:
-      return "Odlaczony";
-    case WL_IDLE_STATUS:
-      return "Bezczynny";
-    case WL_NO_SSID_AVAIL:
-      return "Brak SSID";
-    case WL_SCAN_COMPLETED:
-      return "Zeskanowane";
-    case WL_CONNECT_FAILED:
-      return "Blad polaczenia";
-    case WL_CONNECTION_LOST:
-      return "Utracono pol.";
-    default:
-      return "?";
-  }
+  LOG("Server MDNS:");
+  LOG_LN(prefs.storage.inNetworkName);
 }
 
 void MyServer::update() {
@@ -404,10 +388,12 @@ void MyServer::update() {
 
 void MyServer::begin() {
   enabled = true;
+  LOG_LN("Server -> Start");
   restart();
 }
 
 void MyServer::end() {
+	LOG_LN("Server -> close");
   httpServer.stop();
   WiFi.setAutoConnect(true);
   enabled = false;

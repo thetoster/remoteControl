@@ -36,7 +36,7 @@
   <div class='container mb-4'>
     <div class='card-body'>
       <div class='form-group row'>
-         <label for='url'>URL:</label>
+         <label for='url-{m}'>URL:</label>
          <input type='url' class='col-sm-4' id='url-{m}' name='url-{m}' placeholder='http://jakis.poprawny.url'>
          <div class="btn-group btn-group-toggle" data-toggle="buttons">
             <label class="btn btn-outline-info">
@@ -45,6 +45,10 @@
             <label class="btn btn-outline-info">
               <input name="sign-{m}" id="sign-{m}" type="checkbox" autocomplete="on">SIGNATURE
             </label>
+         </div>
+         <div class='container mb-1'>
+           <label for='key-{m}'>Klucz:</label>
+           <input type='text' class='col-sm-4' id='key-{m}' name='key-{m}' placeholder='klucz w hex'>
          </div>
       </div>
       <div id="params">
@@ -84,7 +88,13 @@ window.onload = function(e){
       } else if (pn === "__P") {
         //turn on POST not GET
         mark("post-" + no);
-
+        
+      } else if (pn === "__K") {
+        $("#key-" + no).val(pv);
+        
+      } else if (pn === "__U") {
+        $("#url-" + no).val(pv);
+        
       } else {
         //this is regular param, just add it
         document.getElementById("add-" + no).click();

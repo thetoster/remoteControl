@@ -37,19 +37,23 @@
 
 class HttpCommand : public Executable {
   public:
-    HttpCommand(String url, uint8_t* key, uint8_t keyLen, bool usePost);
+		String url;
+		uint8_t* key;
+		uint8_t keyLen;
+		bool usePost;
+
+		HttpCommand(String url, uint8_t* key, uint8_t keyLen, bool usePost);
     HttpCommand(File& file);
     void addData(String param, String value);
     bool execute() override;
     virtual void serialize(File& file) override;
     String& getResponse();
     void dropResponse();
+    int getTypeId() override {return HTTP_COMMAND_TYPE_MARKER;}
+    int paramsCount() {return data.size();}
+    std::pair<String, String>& param(int t) {return data[t];}
   private:
-    String url;
-    uint8_t* key;
-    uint8_t keyLen;
-    bool usePost;
-    String response;
+		String response;
     std::vector<std::pair<String, String>> data;
 
     void calcHMac(String& data, String& nonce, String& hmac);

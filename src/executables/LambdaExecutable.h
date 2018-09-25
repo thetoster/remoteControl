@@ -43,6 +43,7 @@ class LambdaExecutable : public Executable {
     }
 
     virtual void serialize(File& file) override {};
+    int getTypeId() override {return -1;}
 };
 
 #endif /* LambdaExecutable_hpp */

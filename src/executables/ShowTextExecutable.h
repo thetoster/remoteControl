@@ -35,6 +35,7 @@ class ShowTextExecutable : public Executable {
   public:
     ShowTextExecutable(SSD1306& display, String& text);
     bool execute() override;
+    int getTypeId() override {return -1;}
   private:
     SSD1306&  display;
     String& text;
