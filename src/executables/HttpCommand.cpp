@@ -30,6 +30,11 @@
 #include <sha256.h>
 #include <ESP8266TrueRandom.h>
 #include "FileHelper.h"
+#include <ESP8266WiFi.h>
+#include <display/DisplayMgr.h>
+
+//in millisec, wait to connect to AP if not connected already
+#define WAIT_TO_CONNECT_TIMEOUT (5*1000)
 
 /*
   uint8_t pass[] = {1,2,3,4};
@@ -93,6 +98,11 @@ void HttpCommand::dropResponse() {
 }
 
 bool HttpCommand::execute() {
+
+	if (waitForConnected() == false) {
+		return false;
+	}
+
   HTTPClient http;
 
   int httpCode = usePost ? doPost(http) : doGet(http);
@@ -186,4 +196,17 @@ void HttpCommand::serialize(File& file) {
     writeString(file, it->first);
     writeString(file, it->second);
   }
+}
+
+bool HttpCommand::waitForConnected() {
+	unsigned long timeoutTime = millis() + WAIT_TO_CONNECT_TIMEOUT;
+	while(WiFi.status() != WL_CONNECTED) {
+		displayMgr.update();	//hmm...bad, think how to not couple this
+		delay(25);
+		if (millis() > timeoutTime) {
+			return false;
+		}
+	}
+
+	return true;
 }

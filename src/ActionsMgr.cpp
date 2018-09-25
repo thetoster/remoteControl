@@ -80,7 +80,7 @@ void ActionsMgr::removeFromPersistance(uint8_t index) {
 
 void ActionsMgr::loadActions() {
   //make things crash ;(
-/*  FILENAME_TYPE(path);
+  FILENAME_TYPE(path);
   for(int t = 0; t < 8; t++) {
     if (actions[t] != nullptr) {
       delete actions[t];
@@ -88,23 +88,24 @@ void ActionsMgr::loadActions() {
       buttons.setButtonFunction(t, nullptr, nullptr);
     }
     SET_FILENAME(path, t);
+    LOG_LN(path);
+
     File f = SPIFFS.open(path, "r");
     if (f and (f.size() > 0)) {
-#if LOG_ENABLED==1
-      if (actions[t]->buttonIndex != t) {
-        Serial.print("Action has wrong button index, expected:");
-        Serial.print(t);
-        Serial.print(" but is:);");
-        Serial.print(actions[t]->buttonIndex);
-      }
-#endif
       actions[t] = loadAction(f);
+      if (actions[t]->buttonIndex != t) {
+        LOG("Action has wrong button index, expected:");
+        LOG(t);
+        LOG(" but is:);");
+        LOG_LN(actions[t]->buttonIndex);
+      }
       buttons.setButtonFunction(t, actions[t], nullptr);
+    	LOG_LN("OPEN OK");
     }
     f.close();
   }
-  LOG_LN("=====");
-  */
+  LOG_LN("Load actions end =====");
+
   //longpress on button 7 always run config
   Executable* tmp;
   Executable* tmp2;
@@ -138,12 +139,11 @@ ActionBind* ActionsMgr::loadAction(File& fileIn) {
   if (isExecutable == HTTP_COMMAND_TYPE_MARKER) {
     action->cmd = new HttpCommand(fileIn);
   }
-#if LOG_ENABLED==1
   else {
-    Serial.print("Unknown serialized type:");
-    Serial.print(isExecutable);
+    LOG("Unknown serialized type:");
+    LOG_LN(isExecutable);
   }
-#endif
+
   LOG_LN("<-end");
   return action;
 }

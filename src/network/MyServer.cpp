@@ -321,7 +321,7 @@ void MyServer::generateRandomPassword() {
     }
   }
 //Nice for debug:
-//strcpy(prefs.storage.password, "TestTest");
+strcpy(prefs.storage.password, "TestTest");
 }
 
 String MyServer::getServerIp() {
