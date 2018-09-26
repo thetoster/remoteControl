@@ -64,8 +64,13 @@ Hardware order is:
  */
 
 void setDebugActions() {
-  uint8_t pass[] = {1,2,3,4};
-  HttpCommand* cmd = new HttpCommand("http://ptsv2.com/t/5kpry-1533759192/post", pass, 4, false);
+  uint8_t* pass = new uint8_t[4];
+  pass[0] = 0xA0;
+  pass[1] = 0x33;
+  pass[2] = 0x11;
+  pass[3] = 0xFF;
+  HttpCommand* cmd = new HttpCommand("http://ptsv2.com/t/5kpry-1533759192/post",
+      pass, 4, false);
   cmd->addData("dupa", "blada");
 
   ActionBind* act = new ActionBind();
@@ -76,7 +81,7 @@ void setDebugActions() {
   actionsMgr.putAction(act);
 
   ///
-  cmd = new HttpCommand("1533759192/post", pass, 4, false);
+  cmd = new HttpCommand("1533759192/post", nullptr, 0, false);
   act = new ActionBind();
   act->buttonIndex = 1;
   act->cmd = cmd;
@@ -91,15 +96,19 @@ void setup() {
 #endif
   WiFi.printDiag(Serial);
   Serial.setDebugOutput(true);
+/* When your router is badass motherfucker...
+  WiFi.setPhyMode(WIFI_PHY_MODE_11N);
+*/
+  //WiFi.disconnect(true);
   prefs.load();
   displayMgr.begin();
   ledCtrl.begin();
+  ledCtrl.turnOffAll();
   buttons.begin();
   actionsMgr.begin();
 
   //debug ----
-  setDebugActions();
-  lastWifiStatus = WL_DISCONNECTED;
+  //lastWifiStatus = WL_DISCONNECTED;
   //------^
 
   if (not prefs.hasPrefs()) {
@@ -110,6 +119,10 @@ void setup() {
     actionsMgr.loadActions();
     displayMgr.setMode(DISPL_WAIT_FOR_CON);
   }
+
+  //debug ----
+  //setDebugActions();
+  //------^
 }
 
 void loop() {

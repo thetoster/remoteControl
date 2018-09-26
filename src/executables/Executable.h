@@ -35,7 +35,7 @@ class Executable {
     virtual ~Executable() = default;
     virtual bool execute() = 0;
     virtual void serialize(File& file) = 0;
-    virtual int getTypeId() = 0;
+    virtual uint8_t getTypeId() {return 0;} //0-not serializable
 };
 
 #endif /* Executable_hpp */

@@ -39,19 +39,30 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <ESP8266WebServer.h>
+#include <unordered_map>
 
 class ActionBind;
 class HttpCommand;
 
 class ActionToServerBridge {
 public:
-	String actionsAsParams();
-	void paramsToActions(const String& params);
+  String actionsAsParams();
+  bool requestToActions(ESP8266WebServer& httpServer);
 
 private:
-	String toHexString(uint8_t* data, int len);
-	void actionToJson(JsonObject& jsonNode, ActionBind* actionBind);
-	void httpCommandToJson(JsonObject& jsonNode, HttpCommand* cmd);
+  using BindsMap = std::unordered_map<int8_t, ActionBind*>;
+
+  String toHexString(uint8_t* data, int len);
+  int fromHexString(String hex, uint8_t** data);
+  void actionToJson(JsonObject& jsonNode, ActionBind* actionBind);
+  void httpCommandToJson(JsonObject& jsonNode, HttpCommand* cmd);
+  bool createBinds(ESP8266WebServer& httpServer, BindsMap& binds);
+  void releaseBinds(BindsMap& binds);
+  bool setSignatureOn(BindsMap& binds, int8_t index, const String& key);
+  bool setPostOn(BindsMap& binds, int8_t index);
+  bool addParamToCmd(BindsMap& binds, int8_t index, String param, String value);
+  int8_t extractIndexFromParamArg(String& name);
 };
 
 #endif /* SRC_NETWORK_ACTIONTOSERVERBRIDGE_H_ */

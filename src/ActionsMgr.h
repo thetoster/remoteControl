@@ -39,6 +39,7 @@ class ActionsMgr {
     void loadActions();
     void putAction(ActionBind* act);
     void removeAction(uint8_t index);
+    void clear();
   private:
 
     ActionBind* loadAction(File& fileIn);

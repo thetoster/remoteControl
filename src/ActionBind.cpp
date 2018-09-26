@@ -42,6 +42,12 @@ ActionBind::ActionBind()
   parseResponse(false), lcdLine1(buttonIndex), lcdLine2(buttonIndex), cmd(nullptr) {
 }
 
+ActionBind::~ActionBind(){
+  if (cmd) {
+    delete cmd;
+  }
+}
+
 bool ActionBind::execute() {
   bool success = (cmd != nullptr) ? cmd->execute() : false;
   displayMgr.showText(lcdLine1, lcdLine2);

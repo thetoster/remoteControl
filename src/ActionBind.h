@@ -46,11 +46,11 @@ class ActionBind : public Executable {
 
     ActionBind();
     ActionBind(uint8_t buttonIndex, Executable* cmd);
-    virtual ~ActionBind() override {}
+    virtual ~ActionBind() override;
 
     virtual bool execute()  override;
     virtual void serialize(File& file) override {};
-    int getTypeId() override {return cmd ? cmd->getTypeId() : -1;}
+    uint8_t getTypeId() override {return cmd ? cmd->getTypeId() : 0;}
 };
 
 #endif /* ActionBind_hpp */

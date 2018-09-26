@@ -47,7 +47,12 @@ HttpCommand::HttpCommand(String url, uint8_t* key, uint8_t keyLen, bool usePost)
 : url(url), key(key), keyLen(keyLen), usePost(usePost) {
 }
 
+HttpCommand::HttpCommand()
+: key(nullptr), keyLen(0), usePost(false) {
+}
+
 HttpCommand::HttpCommand(File& file) {
+  key = nullptr;
   readString(file, url);
   readPrimitive(file, keyLen);
   if (keyLen > 0) {
@@ -63,6 +68,12 @@ HttpCommand::HttpCommand(File& file) {
     readString(file, param);
     readString(file, value);
     data.push_back(std::make_pair(param, value));
+  }
+}
+
+HttpCommand::~HttpCommand() {
+  if (key != nullptr) {
+    delete key;
   }
 }
 
@@ -99,9 +110,9 @@ void HttpCommand::dropResponse() {
 
 bool HttpCommand::execute() {
 
-	if (waitForConnected() == false) {
-		return false;
-	}
+  if (waitForConnected() == false) {
+    return false;
+  }
 
   HTTPClient http;
 
@@ -182,15 +193,13 @@ String& HttpCommand::getResponse() {
 }
 
 void HttpCommand::serialize(File& file) {
-  uint8_t tmp = HTTP_COMMAND_TYPE_MARKER;
-  writePrimitive(file, tmp);  //skip this at load!
   writeString(file, url);
   writePrimitive(file, keyLen);
   if (keyLen > 0) {
     file.write(key, keyLen);
   }
   writePrimitive(file, usePost);
-  tmp = data.size();
+  uint8_t tmp = data.size();
   writePrimitive(file, tmp);
   for(auto it = data.begin(); it != data.end(); it++) {
     writeString(file, it->first);
@@ -199,14 +208,14 @@ void HttpCommand::serialize(File& file) {
 }
 
 bool HttpCommand::waitForConnected() {
-	unsigned long timeoutTime = millis() + WAIT_TO_CONNECT_TIMEOUT;
-	while(WiFi.status() != WL_CONNECTED) {
-		displayMgr.update();	//hmm...bad, think how to not couple this
-		delay(25);
-		if (millis() > timeoutTime) {
-			return false;
-		}
-	}
+  unsigned long timeoutTime = millis() + WAIT_TO_CONNECT_TIMEOUT;
+  while (WiFi.status() != WL_CONNECTED) {
+    displayMgr.update();  //hmm...bad, think how to not couple this
+    delay(25);
+    if (millis() > timeoutTime) {
+      return false;
+    }
+  }
 
-	return true;
+  return true;
 }

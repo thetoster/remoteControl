@@ -48,17 +48,27 @@ void ActionsMgr::begin() {
 
 void ActionsMgr::putAction(ActionBind* act) {
   if (act != nullptr) {
+    LOG("Put action for key:");
+    LOG_LN(act->buttonIndex);
     if (actions[act->buttonIndex] != nullptr) {
       delete actions[act->buttonIndex];
     }
     actions[act->buttonIndex] = act;
-    buttons.setButtonFunction(act->buttonIndex, act, nullptr);
+    if (act->buttonIndex == 7 ) {
+      buttons.setButtonFunction(act->buttonIndex, act, &configMgr);
+    } else {
+      buttons.setButtonFunction(act->buttonIndex, act, nullptr);
+    }
     presistAction(act);
   }
 }
 
 void ActionsMgr::presistAction(ActionBind* action) {
   FILENAME(path, action->buttonIndex);
+  LOG("Save action ");
+  LOG(action->buttonIndex);
+  LOG(" -> ");
+  LOG_LN(path);
   File f = SPIFFS.open(path, "w");
   saveAction(f, action);
   f.close();
@@ -72,10 +82,20 @@ void ActionsMgr::removeAction(uint8_t index) {
     removeFromPersistance(index);
   }
 }
+void ActionsMgr::clear() {
+  for(int t = 0; t < 8; t++) {
+    removeAction(t);
+  }
+  buttons.setButtonFunction(7, nullptr, &configMgr);
+}
 
 void ActionsMgr::removeFromPersistance(uint8_t index) {
   FILENAME(path, index);
-  SPIFFS.remove(path);
+  bool b = SPIFFS.remove(path);
+  LOG("Remove file:");
+  LOG(path);
+  LOG(", result=");
+  LOG_LN(b);
 }
 
 void ActionsMgr::loadActions() {
@@ -133,15 +153,15 @@ ActionBind* ActionsMgr::loadAction(File& fileIn) {
   readString(fileIn, action->lcdLine1);
   readString(fileIn, action->lcdLine2);
 
-  uint8_t isExecutable;
-  readPrimitive(fileIn, isExecutable);
+  uint8_t execType;
+  readPrimitive(fileIn, execType);
 
-  if (isExecutable == HTTP_COMMAND_TYPE_MARKER) {
+  if (execType == HTTP_COMMAND_TYPE_MARKER) {
     action->cmd = new HttpCommand(fileIn);
-  }
-  else {
+
+  } else {
     LOG("Unknown serialized type:");
-    LOG_LN(isExecutable);
+    LOG_LN(execType);
   }
 
   LOG_LN("<-end");
@@ -166,9 +186,9 @@ void ActionsMgr::saveAction(File& fileOut, ActionBind* action) {
   writeString(fileOut, action->lcdLine1);
   writeString(fileOut, action->lcdLine2);
 
-  uint8_t isExecutable = action->cmd != nullptr ? 1 : 0;
-  writePrimitive(fileOut, isExecutable);
-  if (isExecutable != 0) {
+  uint8_t execType = action->cmd == nullptr ? 0 : action->cmd->getTypeId();
+  writePrimitive(fileOut, execType);
+  if (execType != 0) {
     action->cmd->serialize(fileOut);
   }
 }

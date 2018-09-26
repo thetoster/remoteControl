@@ -367,8 +367,14 @@ void MyServer::restart() {
   httpServer.on("/params", HTTP_GET, [this](){
   	httpServer.send(200, "application/json", atsBridge->actionsAsParams());
   }); //get buttons config as JSON
+  httpServer.on("/params", HTTP_POST, [this](){
+  	if (atsBridge->requestToActions(httpServer)) {
+  		httpServer.send(200, "application/json", "200: OK");
 
-//  httpServer.on("/params", HTTP_POST, handleSetButtonActions); //set buttons config
+  	} else {
+  		httpServer.send(400, "text/plain", "400: BAD REQUEST");
+  	}
+  }); //set buttons config
   httpServer.onNotFound(handleNotFound);
 
   httpServer.begin();
