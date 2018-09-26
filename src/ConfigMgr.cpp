@@ -46,6 +46,7 @@ bool ConfigMgr::execute() {
   LOG_LN("CONFIG");
   for(int t = 0; t < 8; t++) {
     buttons.setButtonFunction(t, nullptr, nullptr);
+    ledCtrl.turnOff(t);
   }
 
   //prev on button 0
