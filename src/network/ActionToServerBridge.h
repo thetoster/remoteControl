@@ -62,7 +62,8 @@ private:
   bool setSignatureOn(BindsMap& binds, int8_t index, const String& key);
   bool setPostOn(BindsMap& binds, int8_t index);
   bool addParamToCmd(BindsMap& binds, int8_t index, String param, String value);
-  int8_t extractIndexFromParamArg(String& name);
+  int8_t extractIndexFromParamArg(String& name, int start);
+  bool setLCDLines(BindsMap& binds, int8_t index, String line1, String line2);
 };
 
 #endif /* SRC_NETWORK_ACTIONTOSERVERBRIDGE_H_ */

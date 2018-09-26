@@ -108,10 +108,10 @@ bool ActionToServerBridge::requestToActions(ESP8266WebServer& httpServer) {
       LOG("POST Index:");
       LOG(index);
 
-      success &= setPostOn(binds, index);
+      success = setPostOn(binds, index);
 
     } else if (name.startsWith("pn-")) {
-      int8_t index = extractIndexFromParamArg(name);
+      int8_t index = extractIndexFromParamArg(name, 3);
       String keyParamName{"pv-"};
       keyParamName += name.substring(3);
       success = httpServer.hasArg(keyParamName);
@@ -123,6 +123,21 @@ bool ActionToServerBridge::requestToActions(ESP8266WebServer& httpServer) {
         success = addParamToCmd(binds, index, httpServer.arg(t),
             httpServer.arg(keyParamName));
       }
+
+    } else if (name.startsWith("l1-") or name.startsWith("l2-")) {
+      int8_t index = static_cast<int8_t>(name.substring(3).toInt());
+      String keyL1Name{"l1-"};
+      keyL1Name += index;
+      String keyL2Name{"l2-"};
+      keyL2Name += index;
+      String l1 = httpServer.hasArg(keyL1Name) ? httpServer.arg(keyL1Name) : "";
+      String l2 = httpServer.hasArg(keyL2Name) ? httpServer.arg(keyL2Name) : "";
+      LOG("LCD: [");
+      LOG(l1);
+      LOG("] - [");
+      LOG(l2);
+      LOG_LN("]");
+      success = setLCDLines(binds, index, l1, l2);
     }
   }
 
@@ -140,9 +155,22 @@ bool ActionToServerBridge::requestToActions(ESP8266WebServer& httpServer) {
   return success;
 }
 
-int8_t ActionToServerBridge::extractIndexFromParamArg(String& name) {
-  int endIndex = name.indexOf('-', 3);
-  String indexStr = name.substring(3, endIndex);
+bool ActionToServerBridge::setLCDLines(BindsMap& binds, int8_t index,
+    String line1, String line2) {
+  auto iter = binds.find(index);
+  if (iter == binds.end()) {
+    //param can be sent for not created action, just ignore it or fix html
+    return true;
+  }
+  (*iter).second->lcdLine1 = line1;
+  (*iter).second->lcdLine1 = line2;
+
+  return true;
+}
+
+int8_t ActionToServerBridge::extractIndexFromParamArg(String& name, int start) {
+  int endIndex = name.indexOf('-', start);
+  String indexStr = name.substring(start, endIndex);
   return static_cast<int8_t>(indexStr.toInt());
 }
 

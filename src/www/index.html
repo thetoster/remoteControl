@@ -31,7 +31,7 @@
 
 <div id="cardPatt">
   <div class='card-header alert alert-primary' role='alert'>
-     Komenda guzik {m}
+     Komenda guzik-{m}
   </div>
   <div class='container mb-4'>
     <div class='card-body'>
@@ -47,8 +47,24 @@
             </label>
          </div>
          <div class='container mb-1'>
-           <label for='key-{m}'>Klucz:</label>
-           <input type='text' class='col-sm-4' id='key-{m}' name='key-{m}' placeholder='klucz w hex'>
+           <div class='row'>
+             <div class='col-sm-4'>
+               <label for='l1-{m}'>LCD linia 1:</label>
+               <input type='text' class='col-sm-4' id='l1-{m}' name='l1-{m}' placeholder='tekst' maxLength="16">
+             </div>
+           </div>
+           <div class='row'>
+             <div class='col-4'>
+               <label for='l2-{m}'>LCD linia 2:</label>
+               <input type='text' class='col-sm-4' id='l2-{m}' name='l2-{m}' placeholder='tekst' maxLength="16">
+             </div>
+           </div>
+           <div class='row'>
+             <div class='col-9'>
+               <label for='key-{m}'>Klucz:</label>
+               <input type='text' class='col-sm-4' id='key-{m}' name='key-{m}' placeholder='klucz w hex'>
+             </div>
+           </div>
          </div>
       </div>
       <div id="params">
