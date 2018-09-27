@@ -111,6 +111,12 @@ window.onload = function(e){
       } else if (pn === "__U") {
         $("#url-" + no).val(pv);
         
+      } else if (pn === "__L1") {
+        $("#l1-" + no).val(pv);
+              
+      } else if (pn === "__L2") {
+        $("#l2-" + no).val(pv);
+              
       } else {
         //this is regular param, just add it
         document.getElementById("add-" + no).click();

@@ -58,6 +58,12 @@ String ActionToServerBridge::actionsAsParams() {
 
 void ActionToServerBridge::actionToJson(JsonObject& jsonNode,
     ActionBind* actionBind) {
+  if (actionBind->lcdLine1.length() > 0) {
+    jsonNode["__L1"] = actionBind->lcdLine1;
+  }
+  if (actionBind->lcdLine2.length() > 0) {
+    jsonNode["__L2"] = actionBind->lcdLine2;
+  }
   if (actionBind->cmd->getTypeId() == HTTP_COMMAND_TYPE_MARKER) {
     httpCommandToJson(jsonNode,
         reinterpret_cast<HttpCommand*>(actionBind->cmd));
