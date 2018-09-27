@@ -246,10 +246,10 @@ void handleSetNetConfig() {
   }
   httpServer.send(200, "text/plain", result);
   if (restartNetwork) {
-  	configMgr.end();
-		if (prefs.hasPrefs()) {
-			myServer.connectToAccessPoint();
-		}
+    configMgr.end();
+    if (prefs.hasPrefs()) {
+      myServer.connectToAccessPoint();
+    }
   }
 }
 
@@ -279,6 +279,30 @@ void handleUpdate() {
 }
 
 }//namespace
+
+MyServer::MyServer() :needsConfig(false) {
+  httpServer.on("/", handleRoot);
+  httpServer.on("/network", HTTP_GET, handleGetNetConfig); //get current net conf as Json
+  httpServer.on("/network", HTTP_POST, handleSetNetConfig); //set new net conf and restart
+  httpServer.on("/setup", HTTP_GET, handleNetSetup);  //get page for net configuration
+  httpServer.on("/factoryReset", handleFactoryConfig);
+  httpServer.on("/update", HTTP_POST, handleUpdate);
+  httpServer.on("/version", HTTP_GET, handleVersion);
+  httpServer.on("/params", HTTP_GET, [this]() {
+    httpServer.send(200, "application/json", atsBridge.actionsAsParams());
+  }); //get buttons config as JSON
+  httpServer.on("/params", HTTP_POST, [this]() {
+    if (atsBridge.requestToActions(httpServer)) {
+      httpServer.send(200, "application/json", "200: OK");
+
+    } else {
+      httpServer.send(400, "text/plain", "400: BAD REQUEST");
+    }
+    //restore key binding for configuration menu
+    configMgr.execute();
+  }); //set buttons config
+  httpServer.onNotFound(handleNotFound);
+}
 
 void MyServer::switchToConfigMode() {
   WiFi.setAutoReconnect(false);
@@ -321,15 +345,14 @@ void MyServer::generateRandomPassword() {
     }
   }
 //Nice for debug:
-strcpy(prefs.storage.password, "TestTest");
+//strcpy(prefs.storage.password, "TestTest");
 }
 
 void MyServer::enableSoftAP() {
   WiFi.softAP(prefs.storage.inNetworkName, prefs.storage.password);
 }
 
-void MyServer::restart() {
-  httpServer.stop();
+void MyServer::putNetDown() {
   WiFi.softAPdisconnect(false);
   WiFi.setAutoReconnect(false);
   WiFi.setAutoConnect(false);
@@ -337,37 +360,24 @@ void MyServer::restart() {
   WiFi.enableAP(false);
   WiFi.enableSTA(false);
 
+  delay(1000);
+}
+
+void MyServer::restart() {
+  httpServer.stop();
+
   needsConfig = not prefs.hasPrefs();
   if (needsConfig) {
+    putNetDown();
     generateRandomPassword();
     enableSoftAP();
 
   } else {
     connectToAccessPoint();
   }
-  httpServer.on("/", handleRoot);
-  httpServer.on("/network", HTTP_GET, handleGetNetConfig); //get current net conf as Json
-  httpServer.on("/network", HTTP_POST, handleSetNetConfig); //set new net conf and restart
-  httpServer.on("/setup", HTTP_GET, handleNetSetup);  //get page for net configuration
-  httpServer.on("/factoryReset", handleFactoryConfig);
-  httpServer.on("/update", HTTP_POST, handleUpdate);
-  httpServer.on("/version", HTTP_GET, handleVersion);
-  httpServer.on("/params", HTTP_GET, [this]() {
-    httpServer.send(200, "application/json", atsBridge->actionsAsParams());
-  }); //get buttons config as JSON
-  httpServer.on("/params", HTTP_POST, [this]() {
-    if (atsBridge->requestToActions(httpServer)) {
-      httpServer.send(200, "application/json", "200: OK");
-
-    } else {
-      httpServer.send(400, "text/plain", "400: BAD REQUEST");
-    }
-    //restore key binding for configuration menu
-    configMgr.execute();
-  }); //set buttons config
-  httpServer.onNotFound(handleNotFound);
 
   httpServer.begin();
+
   MDNS.notifyAPChange();
   MDNS.begin(prefs.storage.inNetworkName);
   MDNS.addService("http", "tcp", 80);
@@ -389,7 +399,7 @@ void MyServer::begin() {
 }
 
 void MyServer::end() {
-	LOG_LN("Server -> close");
+  LOG_LN("Server -> close");
   httpServer.stop();
   WiFi.setAutoConnect(true);
   enabled = false;

@@ -32,6 +32,7 @@ SOFTWARE.
 
 class MyServer {
   public:
+    MyServer();
     void restart();
     void update();
     void switchToConfigMode();
@@ -41,10 +42,11 @@ class MyServer {
   private:
     bool needsConfig;
     bool enabled = false;
-    ActionToServerBridge* atsBridge;
+    ActionToServerBridge atsBridge;
 
     void generateRandomPassword();
     void enableSoftAP();
+    void putNetDown();
 };
 
 extern MyServer myServer;
