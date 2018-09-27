@@ -324,18 +324,6 @@ void MyServer::generateRandomPassword() {
 strcpy(prefs.storage.password, "TestTest");
 }
 
-String MyServer::getServerIp() {
-  return needsConfig ? WiFi.softAPIP().toString() : WiFi.localIP().toString();
-}
-
-bool MyServer::isServerConfigured() {
-  return needsConfig == false;
-}
-
-String MyServer::getPassword() {
-  return prefs.storage.password[0] == 0 ? "<-->" : String(prefs.storage.password);
-}
-
 void MyServer::enableSoftAP() {
   WiFi.softAP(prefs.storage.inNetworkName, prefs.storage.password);
 }
@@ -364,16 +352,18 @@ void MyServer::restart() {
   httpServer.on("/factoryReset", handleFactoryConfig);
   httpServer.on("/update", HTTP_POST, handleUpdate);
   httpServer.on("/version", HTTP_GET, handleVersion);
-  httpServer.on("/params", HTTP_GET, [this](){
-  	httpServer.send(200, "application/json", atsBridge->actionsAsParams());
+  httpServer.on("/params", HTTP_GET, [this]() {
+    httpServer.send(200, "application/json", atsBridge->actionsAsParams());
   }); //get buttons config as JSON
-  httpServer.on("/params", HTTP_POST, [this](){
-  	if (atsBridge->requestToActions(httpServer)) {
-  		httpServer.send(200, "application/json", "200: OK");
+  httpServer.on("/params", HTTP_POST, [this]() {
+    if (atsBridge->requestToActions(httpServer)) {
+      httpServer.send(200, "application/json", "200: OK");
 
-  	} else {
-  		httpServer.send(400, "text/plain", "400: BAD REQUEST");
-  	}
+    } else {
+      httpServer.send(400, "text/plain", "400: BAD REQUEST");
+    }
+    //restore key binding for configuration menu
+    configMgr.execute();
   }); //set buttons config
   httpServer.onNotFound(handleNotFound);
 

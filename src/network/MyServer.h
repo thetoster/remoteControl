@@ -32,10 +32,6 @@ SOFTWARE.
 
 class MyServer {
   public:
-    bool isServerConfigured();
-
-    String getServerIp();
-    String getPassword();
     void restart();
     void update();
     void switchToConfigMode();

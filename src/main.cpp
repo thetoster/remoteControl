@@ -107,10 +107,6 @@ void setup() {
   buttons.begin();
   actionsMgr.begin();
 
-  //debug ----
-  //lastWifiStatus = WL_DISCONNECTED;
-  //------^
-
   if (not prefs.hasPrefs()) {
     displayMgr.setMode(DISPL_AP_CONFIG);
     myServer.begin();
@@ -119,10 +115,6 @@ void setup() {
     actionsMgr.loadActions();
     displayMgr.setMode(DISPL_WAIT_FOR_CON);
   }
-
-  //debug ----
-  //setDebugActions();
-  //------^
 }
 
 void loop() {

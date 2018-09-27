@@ -163,7 +163,7 @@ bool ActionToServerBridge::setLCDLines(BindsMap& binds, int8_t index,
     return true;
   }
   (*iter).second->lcdLine1 = line1;
-  (*iter).second->lcdLine1 = line2;
+  (*iter).second->lcdLine2 = line2;
 
   return true;
 }
