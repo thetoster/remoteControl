@@ -35,6 +35,7 @@ SOFTWARE.
 #include "../Prefs.h"
 #include <ConfigMgr.h>
 #include "../debug.h"
+#include <network/NetworkCtrl.h>
 
 static const char rootHtml[] PROGMEM =
   #include "www/index_comp.html"
@@ -248,7 +249,7 @@ void handleSetNetConfig() {
   if (restartNetwork) {
     configMgr.end();
     if (prefs.hasPrefs()) {
-      myServer.connectToAccessPoint();
+      networkCtrl.connectToAccessPoint();
     }
   }
 }
@@ -305,31 +306,11 @@ MyServer::MyServer() :needsConfig(false) {
 }
 
 void MyServer::switchToConfigMode() {
-  WiFi.setAutoReconnect(false);
-  WiFi.disconnect(false);
-  WiFi.enableAP(false);
-  WiFi.enableSTA(false);
-  delay(500);
+  networkCtrl.putNetworkDown();
   memset(prefs.storage.ssid, 0, sizeof(prefs.storage.ssid));
   generateRandomPassword();
   needsConfig = true;
-  enableSoftAP();
-}
-
-void MyServer::connectToAccessPoint() {
-  WiFi.setPhyMode(WIFI_PHY_MODE_11N);
-  WiFi.softAPdisconnect(false);
-  WiFi.enableAP(false);
-  WiFi.begin(prefs.storage.ssid, prefs.storage.wifiPassword);
-  WiFi.setAutoReconnect(true);
-  WiFi.setAutoConnect(true);
-  LOG("Connect to access point:'");
-  LOG(prefs.storage.ssid);
-  LOG_LN("'");
-//Dangerous, beware!
-//  LOG("password:'");
-//  LOG(prefs.storage.wifiPassword);
-//  LOG_LN("'");
+  networkCtrl.enableSoftAP();
 }
 
 void MyServer::generateRandomPassword() {
@@ -350,32 +331,17 @@ void MyServer::generateRandomPassword() {
 //strcpy(prefs.storage.password, "TestTest");
 }
 
-void MyServer::enableSoftAP() {
-  WiFi.softAP(prefs.storage.inNetworkName, prefs.storage.password);
-}
-
-void MyServer::putNetDown() {
-  WiFi.softAPdisconnect(false);
-  WiFi.setAutoReconnect(false);
-  WiFi.setAutoConnect(false);
-  WiFi.disconnect(false);
-  WiFi.enableAP(false);
-  WiFi.enableSTA(false);
-
-  delay(1000);
-}
-
 void MyServer::restart() {
   httpServer.stop();
 
   needsConfig = not prefs.hasPrefs();
   if (needsConfig) {
-    putNetDown();
+    networkCtrl.putNetworkDown();
     generateRandomPassword();
-    enableSoftAP();
+    networkCtrl.enableSoftAP();
 
   } else {
-    connectToAccessPoint();
+    networkCtrl.connectToAccessPoint();
   }
 
   httpServer.begin();

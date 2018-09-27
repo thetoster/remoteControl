@@ -38,7 +38,6 @@ class MyServer {
     void switchToConfigMode();
     void begin();
     void end();
-    void connectToAccessPoint();
   private:
     bool needsConfig;
     bool enabled = false;
@@ -46,7 +45,6 @@ class MyServer {
 
     void generateRandomPassword();
     void enableSoftAP();
-    void putNetDown();
 };
 
 extern MyServer myServer;

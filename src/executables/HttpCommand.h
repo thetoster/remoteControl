@@ -67,7 +67,6 @@ class HttpCommand : public Executable {
     void buildQuery(String& query);
     void urlEncoded(String& in, String& out);
     int doGet(HTTPClient& http);
-    bool waitForConnected();
 };
 
 #endif /* HttpCommand_hpp */

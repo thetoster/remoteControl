@@ -39,6 +39,7 @@ SOFTWARE.
 #include <ESP8266WiFi.h>
 #include <Prefs.h>
 #include "SleepMgr.h"
+#include <network/NetworkCtrl.h>
 
 const String versionString {"0.0.1"};
 
@@ -97,10 +98,6 @@ void setup() {
 #endif
   WiFi.printDiag(Serial);
   Serial.setDebugOutput(true);
-/* When your router is badass motherfucker...
-  WiFi.setPhyMode(WIFI_PHY_MODE_11N);
-*/
-  //WiFi.disconnect(true);
   prefs.load();
   displayMgr.begin();
   ledCtrl.begin();
@@ -108,6 +105,7 @@ void setup() {
   buttons.begin();
   actionsMgr.begin();
   sleepMgr.stimulate();
+
   if (not prefs.hasPrefs()) {
     displayMgr.setMode(DISPL_AP_CONFIG);
     myServer.begin();
@@ -115,7 +113,7 @@ void setup() {
   } else {
     actionsMgr.loadActions();
     displayMgr.setMode(DISPL_WAIT_FOR_CON);
-    myServer.connectToAccessPoint();
+    networkCtrl.connectToAccessPoint();
   }
 }
 
@@ -125,6 +123,7 @@ void loop() {
   }
 
   sleepMgr.update();
+  networkCtrl.update();
   myServer.update();
   displayMgr.update();
   buttons.update();

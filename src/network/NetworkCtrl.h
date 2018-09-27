@@ -29,64 +29,30 @@
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
- SleepMgr.cpp
+ NetworkCtrl.h
  Created on: Sep 27, 2018
  Author: Bartłomiej Żarnowski (Toster)
  */
 
-#include "SleepMgr.h"
-#include <Arduino.h>
-#include <display/DisplayMgr.h>
-#include <ESP8266WiFi.h>
-#include <network/MyServer.h>
-#include <Prefs.h>
-#include <network/NetworkCtrl.h>
-#include "debug.h"
+#ifndef SRC_NETWORK_NETWORKCTRL_H_
+#define SRC_NETWORK_NETWORKCTRL_H_
 
-#define PROLONG_TIME  (15000)
+#include <vector>
 
-SleepMgr sleepMgr;
+class NetworkCtrl {
+public:
+  void putNetworkDown();
+  void connectToAccessPoint();
+  void enableSoftAP();
+  void update();
+  bool waitForAPConnection();
+private:
+  //measure about how fast we can connect to AP, used to waitForAPConnection()
+  unsigned long startConnectMillis = 0;
+  std::vector<unsigned long> times;
 
-void SleepMgr::update() {
-  if ((not enabled) or (millisToSleep == 0)) {
-    return;
-  }
-  if (lastMillis == 0) {
-    lastMillis = millis();
-    return;
-  }
+  unsigned long calcTimeout();
+};
 
-  unsigned long delta = (millis() - lastMillis);
-  lastMillis = millis();
-  if (millisToSleep > delta) {
-    millisToSleep -= delta;
-  } else {
-    millisToSleep = 0;
-  }
-
-  if (millisToSleep == 0) {
-    //go sleep
-    LOG_LN("SleepMgr: Go to sleep");
-    displayMgr.turnOffLCD();
-    networkCtrl.putNetworkDown();
-  }
-}
-
-void SleepMgr::stimulate() {
-  LOG_LN("SleepMgr: stimulate");
-  millisToSleep += PROLONG_TIME;
-  if ((WiFi.getMode() == WIFI_OFF) and prefs.hasPrefs()) {
-    networkCtrl.connectToAccessPoint();
-    LOG_LN("SleepMgr: reconnect network");
-  }
-}
-
-void SleepMgr::enable() {
-  enabled = true;
-  LOG_LN("SleepMgr: enabled");
-}
-
-void SleepMgr::disable() {
-  enabled = false;
-  LOG_LN("SleepMgr: disabled");
-}
+extern NetworkCtrl networkCtrl;
+#endif /* SRC_NETWORK_NETWORKCTRL_H_ */
