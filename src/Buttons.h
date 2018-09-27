@@ -49,6 +49,7 @@ class Buttons {
             Executable* longPressCallback = nullptr;
             bool lastPressed;
             uint8_t pressedTickCount;
+            uint8_t rawIndex;
         };
 
     PCF8574* pcf20 = nullptr;

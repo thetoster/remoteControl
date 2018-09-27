@@ -42,6 +42,7 @@
 #include <Prefs.h>
 #include <network/NetworkCtrl.h>
 #include "debug.h"
+#include <LedCtrl.h>
 
 #define PROLONG_TIME  (15000)
 
@@ -69,6 +70,7 @@ void SleepMgr::update() {
     LOG_LN("SleepMgr: Go to sleep");
     displayMgr.turnOffLCD();
     networkCtrl.putNetworkDown();
+    ledCtrl.turnOffAll();
   }
 }
 
