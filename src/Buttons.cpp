@@ -27,6 +27,7 @@
  */
 #include <Buttons.h>
 #include <Arduino.h>
+#include <SleepMgr.h>
 
 static const uint8_t WANTED_TO_HARDWARE[] = {7, 3, 6, 2, 5, 1, 4, 0};
 
@@ -65,14 +66,21 @@ void Buttons::update() {
     lastMilis = millis();
 
     uint8_t state = pcf20->read8();
+    bool stimuli = false;
     for(int t = 0; t < 8; t++) {
       //note inverted state! Button pressed is 0 not 1
-      handleButtonUpdate(buttons[t], bitRead(state, t) == 0);
+      bool r = handleButtonUpdate(buttons[t], bitRead(state, t) == 0);
+      stimuli |= r;
+    }
+    if (stimuli) {
+      sleepMgr.stimulate();
     }
   }
 }
 
-void Buttons::handleButtonUpdate(ButtonContext& ctx, bool isPressed) {
+bool Buttons::handleButtonUpdate(ButtonContext& ctx, bool isPressed) {
+  bool somethingChanged = false;
+
   if (ctx.lastPressed && isPressed) {
     //user continue to hold pressed button
     ctx.pressedTickCount ++;
@@ -82,6 +90,7 @@ void Buttons::handleButtonUpdate(ButtonContext& ctx, bool isPressed) {
     //user just pressed button
     ctx.lastPressed = true;
     ctx.pressedTickCount = 1;
+    somethingChanged = true;
 
   } else if ( ctx.lastPressed and (not isPressed)) {
     //user just released button
@@ -94,5 +103,8 @@ void Buttons::handleButtonUpdate(ButtonContext& ctx, bool isPressed) {
 
     ctx.lastPressed = false;
     ctx.pressedTickCount = 0;
+    somethingChanged = true;
   }
+
+  return somethingChanged;
 }

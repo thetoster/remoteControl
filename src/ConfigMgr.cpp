@@ -35,6 +35,7 @@
 #include <network/MyServer.h>
 #include "debug.h"
 #include <NeoPixelBus.h>
+#include <SleepMgr.h>
 
 static RgbColor NAVI_KEY_COL(32, 32, 128);
 static RgbColor SELECT_KEY_COL(32, 128, 32);
@@ -93,6 +94,7 @@ bool ConfigMgr::execute() {
   ledCtrl.turnOn(2, SELECT_KEY_COL);
   ledCtrl.turnOn(7, QUIT_KEY_COL);
 
+  sleepMgr.disable();
   return true;
 }
 
@@ -208,6 +210,7 @@ void ConfigMgr::end() {
   displayMgr.setMode(DISPL_NORMAL);
   releaseAllActions();
   actionsMgr.loadActions();
+  sleepMgr.enable();
 }
 
 Executable* ConfigMgr::addLambda(std::function<bool()> lambda) {

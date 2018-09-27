@@ -55,7 +55,7 @@ class Buttons {
     long lastMilis = 0;
     ButtonContext buttons[8];
 
-    void handleButtonUpdate(ButtonContext& ctx, bool isPressed);
+    bool handleButtonUpdate(ButtonContext& ctx, bool isPressed);
 };
 
 extern Buttons buttons;

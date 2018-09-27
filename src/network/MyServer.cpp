@@ -317,15 +317,17 @@ void MyServer::switchToConfigMode() {
 }
 
 void MyServer::connectToAccessPoint() {
+  WiFi.setPhyMode(WIFI_PHY_MODE_11N);
   WiFi.softAPdisconnect(false);
   WiFi.enableAP(false);
   WiFi.begin(prefs.storage.ssid, prefs.storage.wifiPassword);
   WiFi.setAutoReconnect(true);
   WiFi.setAutoConnect(true);
+  LOG("Connect to access point:'");
+  LOG(prefs.storage.ssid);
+  LOG_LN("'");
 //Dangerous, beware!
-//  LOG("Connect to access point:'");
-//  LOG(prefs.storage.ssid);
-//  LOG("', password:'");
+//  LOG("password:'");
 //  LOG(prefs.storage.wifiPassword);
 //  LOG_LN("'");
 }

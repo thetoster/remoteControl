@@ -41,14 +41,17 @@ class DisplayMgr {
   public:
     void begin();
     void update();
-    void setMode(DisplayMgrMode mode) { this->mode = mode; }
+    void setMode(DisplayMgrMode mode) { turnOnLCD(); this->mode = mode; }
     DisplayMgrMode getMode() { return mode; }
     void showText(String line1, String line2);
+    void turnOffLCD();
+    void turnOnLCD();
   private:
     DisplayMgrMode mode;
-    unsigned long outTime;
-    uint8_t animFrame;
+    unsigned long outTime = 0;
+    uint8_t animFrame = 0;
     String lines[2];
+    bool isDisplayOn = false;
 
     void normalMode();
     void configMode();

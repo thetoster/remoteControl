@@ -41,7 +41,7 @@ NetworkMonitor networkMonitor;
 
 void DisplayMgr::begin() {
   display.init();
-  display.displayOn();
+  turnOnLCD();
   display.normalDisplay();
   display.setContrast(128);
   display.setColor(WHITE);
@@ -54,6 +54,10 @@ void DisplayMgr::begin() {
 }
 
 void DisplayMgr::update() {
+  if (not isDisplayOn) {
+    return;
+  }
+
   display.clear();
   switch(mode) {
     case DISPL_CONFIG:
@@ -134,15 +138,15 @@ void DisplayMgr::configureAPMode() {
 
   //show name and IP
   if (prefs.storage.inNetworkName[0] != 0) {
-  	if (animFrame < 5) {
-  		display.drawString(0, 20, prefs.storage.inNetworkName);
+    if (animFrame < 5) {
+      display.drawString(0, 20, prefs.storage.inNetworkName);
 
-  	} else {
-  		display.drawString(0, 20, WiFi.softAPIP().toString());
-  	}
+    } else {
+      display.drawString(0, 20, WiFi.softAPIP().toString());
+    }
 
   } else {
-  	display.drawString(0, 20, WiFi.softAPIP().toString());
+    display.drawString(0, 20, WiFi.softAPIP().toString());
   }
 
   //Show password
@@ -158,7 +162,7 @@ void DisplayMgr::configureAPMode() {
   if ((millis() > outTime) or (outTime == (unsigned long) -1)) {
     animFrame ++;
     if (animFrame > 10) {
-    	animFrame = 0;
+      animFrame = 0;
     }
     outTime = millis() + 500;
   }
@@ -170,4 +174,19 @@ void DisplayMgr::showText(String line1, String line2) {
   lines[1] = line2;
   outTime = (line1.length() + line2.length()) > 0 ? millis() + PRESENTATION_TIME
       : (unsigned long)-1;
+  turnOnLCD();
+}
+
+void DisplayMgr::turnOffLCD() {
+  if (isDisplayOn) {
+    display.displayOff();
+    isDisplayOn = false;
+  }
+}
+
+void DisplayMgr::turnOnLCD() {
+  if (not isDisplayOn) {
+    display.displayOn();
+    isDisplayOn = true;
+  }
 }

@@ -38,6 +38,7 @@ SOFTWARE.
 #include "executables/ShowTextExecutable.h"
 #include <ESP8266WiFi.h>
 #include <Prefs.h>
+#include "SleepMgr.h"
 
 const String versionString {"0.0.1"};
 
@@ -106,7 +107,7 @@ void setup() {
   ledCtrl.turnOffAll();
   buttons.begin();
   actionsMgr.begin();
-
+  sleepMgr.stimulate();
   if (not prefs.hasPrefs()) {
     displayMgr.setMode(DISPL_AP_CONFIG);
     myServer.begin();
@@ -114,6 +115,7 @@ void setup() {
   } else {
     actionsMgr.loadActions();
     displayMgr.setMode(DISPL_WAIT_FOR_CON);
+    myServer.connectToAccessPoint();
   }
 }
 
@@ -122,6 +124,7 @@ void loop() {
     return;
   }
 
+  sleepMgr.update();
   myServer.update();
   displayMgr.update();
   buttons.update();
