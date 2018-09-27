@@ -6,68 +6,40 @@
     <meta http-equiv='Content-Language' content='pl'  />
     <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
     <title>Konfiguracja</title>
-    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css' integrity='sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy' crossorigin='anonymous'>
   </head>
   <body>
-    <script src='https://code.jquery.com/jquery-3.2.1.slim.min.js' integrity='sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN' crossorigin='anonymous'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js' integrity='sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q' crossorigin='anonymous'></script>
-    <script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js' integrity='sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4' crossorigin='anonymous'></script>
+    <form method='POST'>
+      <table>
+        <tr>
+          <td>Nazwa punktu dostępowego (SSID)</td>
+          <td><input type='text' id='ssid' name='ssid' placeholder='Podaj nazwę sieci' value='${ssid}'></td>
+        </tr>
+        <tr>
+          <td>Hasło do punktu dostępowego</td>
+          <td><input type='password' id='wifiPassword' name='wifiPassword' placeholder='Podaj hasło do sieci' ></td>
+        </tr>
+        <tr>
+          <td>Nazwa pilota (MDNS)</td>
+          <td><input type='text' id='inNetworkName' name='inNetworkName' placeholder='Nazwa pilota w sieci' value='${inNetworkName}'></td>
+        </tr>
+        <tr>
+          <td>Nazwa konta admina</td>
+          <td><input type='text' id='username' name='username' placeholder='Nazwa administratora' value='${username}'></td>
+        </tr>
+        <tr>
+          <td>Hasło admina</td>
+          <td><input type='password' id='password' name='password' placeholder='Hasło' ></td>
+        </tr>
+      </table>
+      <button type='submit' formaction='/network'>Zapisz konfiguracje</button>
+      <button type='submit' formaction='/factoryReset'>Zresetuj do ustawień fabrycznych</button>
+    </form>
 
-    <div class='container mb-4'>
-      <form method='POST'>
-        <div class='card'>
-          <div class='card-header alert alert-success' role='alert'>
-            Konfiguracja sieci
-          </div>
-          <div class='form-group'>
-            <label for='ssid'>Nazwa punktu dostępowego (SSID)</label>
-            <input type='text' class='form-control' id='ssid' name='ssid' aria-describedby='ssidHelp' placeholder='Podaj nazwę sieci' value='${ssid}'>
-            <small id='ssidHelp' class='form-text text-muted'>Po zapisaniu konfiguracji, pilot będzie starał się połączyć do tej sieci.</small>
-          </div>
-          <div class='form-group'>
-            <label for='wifiPassword'>Hasło do punktu dostępowego</label>
-            <input type='password' class='form-control' id='wifiPassword' name='wifiPassword' aria-describedby='wifiPasswordHelp' placeholder='Podaj hasło do sieci' >
-            <small id='wifiPasswordHelp' class='form-text text-muted'>To hasło będzie użyte podczas próby połączenia się do sieci o podanej nazwie (ssid).</small>
-          </div>
-          <div class='form-group'>
-            <label for='inNetworkName'>Nazwa czujnika</label>
-            <input type='text' class='form-control' id='inNetworkName' name='inNetworkName' aria-describedby='inNetworkNameHelp' placeholder='Nazwa czujnika w sieci' value='${inNetworkName}'>
-            <small id='inNetworkNameHelp' class='form-text text-muted'>Pod tą nazwą pilot będzie się rozgłaszać w sieci za pomocą protokołu mDNS.</small>
-          </div>
-          <div class='form-group'>
-            <label for='username'>Użytkownik</label>
-            <input type='text' class='form-control' id='username' name='username' aria-describedby='usernameHelp' placeholder='Nazwa administratora' value='${username}'>
-            <small id='usernameHelp' class='form-text text-muted'>Nazwa administratora jest potrzebna do autentykacji.</small>
-          </div>
-          <div class='form-group'>
-            <label for='password'>Hasło administratora</label>
-            <input type='password' class='form-control' id='password' name='password' aria-describedby='passwordHelp' placeholder='Podaj hasło do sieci' >
-            <small id='passwordHelp' class='form-text text-muted'>Hasło administratora jest potrzebne do autentykacji.</small>
-          </div>
-        </div>
-        <div class='card-body'>
-          <button type='submit' class='btn btn-warning' formaction='/network'>Zapisz konfiguracje</button>
-          <button type='submit' class='btn btn-danger' formaction='/factoryReset'>Zresetuj do ustawień fabrycznych</button>
-        </div>
-      </form>
-    </div>
-    <div class='container mb-4'>
+    <hr>
       <form class='card' action='/update' method='POST'>
-        <div class='card-header alert alert-danger' role='alert'>
-          Aktualizacja
-        </div>
-        <div class='card-body'>
-          <div class='form-group'>
-            <label for='url'>URL do pliku z firmware.</label>
-            <input type='url' class='form-control' id='url' name='url' aria-describedby='urlHelp' placeholder='http://jakis.poprawny.url'>
-            <small id='urlHelp' class='form-text text-muted'>Proszę wskazać poprawny URL gdzie znajduje się nowy plik z firmware. Czujnik wczyta ten plik i wgra go do pamięci flash, po czym się zrestartuje.</small>
-          </div>
-          <button type='submit' class='btn btn-danger' formaction='/update'>Rozpocznij aktualizację</button>
-        </div>
+        <H2>Aktualizacja</H2>
+        <input type='url' id='url' name='url' placeholder='http://jakis.poprawny.url'>
+        <button type='submit' formaction='/update'>Rozpocznij aktualizację</button>
       </form>
-    </div>
-    <script>
-      document.getElementById("${selectedHeuristic}").click();
-    </script>
   </body>
 </html>
