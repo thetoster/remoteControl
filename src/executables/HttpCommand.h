@@ -59,7 +59,7 @@ class HttpCommand : public Executable {
     String response;
     std::vector<std::pair<String, String>> data;
 
-    void calcHMac(String& data, String& nonce, String& hmac);
+    void calcHMac(String& nonce, String& hmac);
 
     void buildPayload(String& data);
     int doPost(HTTPClient& http);

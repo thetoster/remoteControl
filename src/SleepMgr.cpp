@@ -44,8 +44,6 @@
 #include "debug.h"
 #include <LedCtrl.h>
 
-#define PROLONG_TIME  (15000)
-
 SleepMgr sleepMgr;
 
 void SleepMgr::update() {
@@ -74,7 +72,7 @@ void SleepMgr::update() {
   }
 }
 
-void SleepMgr::stimulate() {
+void SleepMgr::stimulate(unsigned long period) {
   LOG_LN("SleepMgr: stimulate");
   millisToSleep += PROLONG_TIME;
   if ((WiFi.getMode() == WIFI_OFF) and prefs.hasPrefs()) {

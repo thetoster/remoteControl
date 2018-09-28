@@ -32,7 +32,7 @@
 #include "FileHelper.h"
 #include <ESP8266WiFi.h>
 #include <network/NetworkCtrl.h>
-
+#include "debug.h"
 /*
   uint8_t pass[] = {1,2,3,4};
   HttpCommand cmd("http://ptsv2.com/t/5kpry-1533759192/post", pass, 4, false);
@@ -78,19 +78,13 @@ void HttpCommand::addData(String param, String value) {
   data.push_back(std::make_pair(param, value));
 }
 
-void HttpCommand::buildPayload(String& payload) {
-  DynamicJsonBuffer  jsonBuffer;
-  JsonObject& root = jsonBuffer.createObject();
-  for(auto it = data.begin(); it != data.end(); it++) {
-    root[it->first] = it->second;
-  }
-  root.printTo(payload);
-}
-
-void HttpCommand::calcHMac(String& data, String& nonce, String& hmac) {
+void HttpCommand::calcHMac(String& nonce, String& hmac) {
   Sha256.initHmac(key, keyLen);
   Sha256.print(nonce);
-  Sha256.print(data);
+  for(auto it = data.begin(); it != data.end(); it++) {
+    Sha256.print(it->first);
+    Sha256.print(it->second);
+  }
   Sha256.print(nonce);
 
   hmac.reserve(64);
@@ -123,13 +117,14 @@ bool HttpCommand::execute() {
 
 int HttpCommand::doPost(HTTPClient& http) {
   String payload;
-  buildPayload(payload);
+  buildQuery(payload);
   String hMac;
+  //TODO: well, nonce is bullshit in this form. But how to go with no RTC?
   String nonce(ESP8266TrueRandom.random() % 65535);
-  calcHMac(payload, nonce, hMac);
+  calcHMac(nonce, hMac);
 
   http.begin(url);
-  http.addHeader("Content-Type", "text/plain");
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
   http.addHeader("HMac", hMac);
   http.addHeader("nonce", nonce);
   return http.POST(payload);
@@ -158,15 +153,12 @@ void HttpCommand::buildQuery(String& query) {
       estSize += it->first.length() + it->second.length() + 2;  //+2 -> &/? and = sign
     }
     query.reserve(estSize);
-    char separator = '?';
 
     for(auto it = data.begin(); it != data.end(); it++) {
-      query += separator;
+      query += '&';
       urlEncoded(it->first, query);
       query += '=';
       urlEncoded(it->second, query);
-
-      separator = '&';
     }
   }
 }
@@ -176,10 +168,11 @@ int HttpCommand::doGet(HTTPClient& http) {
   buildQuery(query);
 
   String hMac;
+  //TODO: well, nonce is bullshit in this form. But how to go with no RTC?
   String nonce(ESP8266TrueRandom.random() % 65535);
-  calcHMac(query, nonce, hMac);
+  calcHMac(nonce, hMac);
 
-  http.begin(url + query);
+  http.begin(url + "?" + query);
   http.addHeader("HMac", hMac);
   http.addHeader("nonce", nonce);
   return http.GET();

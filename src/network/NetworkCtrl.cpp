@@ -41,6 +41,7 @@
 #include <Prefs.h>
 #include "debug.h"
 #include <numeric>
+#include <SleepMgr.h>
 
 NetworkCtrl networkCtrl;
 
@@ -120,15 +121,16 @@ bool NetworkCtrl::waitForAPConnection() {
   LOG(timeoutTime);
   LOG(" ms...");
 
+  sleepMgr.stimulate(timeoutTime);
   timeoutTime += millis();
   while (WiFi.status() != WL_CONNECTED) {
     displayMgr.update();
     delay(25);
     if (millis() > timeoutTime) {
-      LOG(" CONNECTION NOT READY");
+      LOG_LN(" CONNECTION NOT READY");
       return false;
     }
   }
-  LOG(" CONNECTED");
+  LOG_LN(" CONNECTED");
   return true;
 }

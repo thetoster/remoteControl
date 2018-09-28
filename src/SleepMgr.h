@@ -37,10 +37,12 @@
 #ifndef SRC_SLEEPMGR_H_
 #define SRC_SLEEPMGR_H_
 
+#define PROLONG_TIME  15000
+
 class SleepMgr {
 public:
   void update();
-  void stimulate();
+  void stimulate(unsigned long period = PROLONG_TIME);
   void enable();
   void disable();
 private:
