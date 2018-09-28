@@ -183,12 +183,13 @@ int8_t ActionToServerBridge::extractIndexFromParamArg(String& name, int start) {
 bool ActionToServerBridge::addParamToCmd(BindsMap& binds, int8_t index,
     String param, String value) {
   auto iter = binds.find(index);
-  if (iter == binds.end()) {
+  if (iter == binds.end() or (param.length() == 0) or
+      (value.length() == 0)) {
     //param can be sent for not created action, just ignore it or fix html
+    //it also might be just delete param (empty name/value)
     return true;
   }
-  if (((*iter).second->cmd == nullptr) or (param.length() == 0) or
-      (value.length() == 0)) {
+  if ((*iter).second->cmd == nullptr) {
     return false;
   }
   HttpCommand* cmd = static_cast<HttpCommand*>((*iter).second->cmd);
