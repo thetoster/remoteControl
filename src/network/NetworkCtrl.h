@@ -52,6 +52,7 @@ private:
   std::vector<unsigned long> times;
 
   unsigned long calcTimeout();
+  void setProperDisplayMode();
 };
 
 extern NetworkCtrl networkCtrl;

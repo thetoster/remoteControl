@@ -30,6 +30,7 @@
 void readString(File& file, String& str) {
   int len;
   readPrimitive(file, len);
+  str.remove(0);
   str.reserve(len);
   char buf[10];
   while(len > 0) {

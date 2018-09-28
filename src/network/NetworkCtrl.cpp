@@ -84,6 +84,7 @@ void NetworkCtrl::enableSoftAP() {
 void NetworkCtrl::update() {
   if (startConnectMillis != 0) {
     if (WiFi.status() == WL_CONNECTED) {
+      setProperDisplayMode();
       unsigned long delta = millis() - startConnectMillis;
       delta += 1000;  //add one second as a jitter
       startConnectMillis = 0;
@@ -133,4 +134,10 @@ bool NetworkCtrl::waitForAPConnection() {
   }
   LOG_LN(" CONNECTED");
   return true;
+}
+
+void NetworkCtrl::setProperDisplayMode() {
+  if (displayMgr.getMode() == DISPL_WAIT_FOR_CON) {
+    displayMgr.setMode(DISPL_NORMAL);
+  }
 }

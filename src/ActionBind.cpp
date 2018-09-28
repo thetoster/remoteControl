@@ -28,6 +28,8 @@
 #include <ActionBind.h>
 #include "LedCtrl.h"
 #include "display/DisplayMgr.h"
+#include <network/ResponseParser.h>
+#include <executables/HttpCommand.h>
 
 static RgbColor LIME_COL(32, 128, 32);
 static RgbColor RED_COL(128, 0, 0);
@@ -49,8 +51,17 @@ ActionBind::~ActionBind(){
 }
 
 bool ActionBind::execute() {
-  bool success = (cmd != nullptr) ? cmd->execute() : false;
   displayMgr.showText(lcdLine1, lcdLine2);
+  displayMgr.update();
+  bool success = (cmd != nullptr) ? cmd->execute() : false;
+
+  //TODO: remove this coupling
+  if (cmd->getTypeId() == HTTP_COMMAND_TYPE_MARKER) {
+    HttpCommand* hcmd = static_cast<HttpCommand*>(cmd);
+    ResponseParser rp;
+    rp.parse(hcmd->getResponse());
+  }
+
   if (success) {
     ledCtrl.blinkPattern(buttonIndex, successPattern, successColor);
   } else {
