@@ -58,6 +58,7 @@ bool ConfigMgr::execute() {
       this->page = 4;
     }
     updateDisplayedPage();
+    ledCtrl.turnOn(0, NAVI_KEY_COL);
     return true;
   }), nullptr);
 
@@ -69,10 +70,11 @@ bool ConfigMgr::execute() {
         this->page = 0;
       }
       updateDisplayedPage();
+      ledCtrl.turnOn(1, NAVI_KEY_COL);
       return true;
     }), nullptr);
 
-  //next on button 2
+  //execute action
   buttons.setButtonFunction(2, addLambda([this](){
       runSelectedAction();
       return true;
@@ -102,16 +104,21 @@ void ConfigMgr::runSelectedAction() {
   switch(page) {
       case 0:
         myServer.begin();
+        ledCtrl.turnOn(2, SELECT_KEY_COL);
         break;
+
       case 1:
         showUsedKeys();
         break;
+
       case 2:
         clearUsedKeys();
         break;
+
       case 3:
         factoryReset();
         break;
+
       case 4:
         end();
         break;
@@ -130,8 +137,8 @@ void ConfigMgr::confirmableAction(String line1, String line2,
   buttons.setButtonFunction(0, addLambda([this, execOnConfirm, backToConfig](){
       execOnConfirm();
       if (backToConfig) {
-      	releaseAllActions();
-      	this->execute();  //go back to config mode
+        releaseAllActions();
+        this->execute();  //go back to config mode
       }
       return true;
     }), nullptr);
