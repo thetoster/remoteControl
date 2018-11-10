@@ -172,9 +172,15 @@ int HttpCommand::doGet(HTTPClient& http) {
   String nonce(ESP8266TrueRandom.random() % 65535);
   calcHMac(nonce, hMac);
 
-  http.begin(url + "?" + query);
-  http.addHeader("HMac", hMac);
-  http.addHeader("nonce", nonce);
+  if (url.endsWith("??")) {
+    //nasty hack, prof of my lazines
+    query += "&HMac=" + hMac +"&nonce="+nonce;
+    http.begin(url.substring(0, url.length() - 2) + "/" + query);
+  } else {
+    http.begin(url + "?" + query);
+    http.addHeader("HMac", hMac);
+    http.addHeader("nonce", nonce);
+  }
   return http.GET();
 }
 
